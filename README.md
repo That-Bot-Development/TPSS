@@ -1,2 +1,2 @@
 # TPSS-JS
-Repository for That Place Server System
+Repository for That Place Server System - "That Bot"
