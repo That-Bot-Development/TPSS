@@ -20,6 +20,7 @@ intents = discord.Intents.all()
 class aClient(commands.Bot):
     def __init__(self, *, intents: discord.Intents):
         super().__init__(intents=intents,command_prefix="db_tpss!")
+        print("Started up!")
     async def setup_hook(self):
         self.tree.copy_global_to(guild=GUID)
         await self.tree.sync(guild=GUID)
