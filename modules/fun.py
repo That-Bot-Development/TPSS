@@ -44,6 +44,8 @@ class Cat(BaseModule):
                 embed = discord.Embed(title="Here's a cat for you! 🐱")
                 embed.set_image(url=response.url)  # Use the URL from the response
                 await interactions.response.send_message(embed=embed)
+            else:
+                print(response.status_code)
 
         except Exception as e:
             print(f"Exception occured in 'cat' operation: {e}")
