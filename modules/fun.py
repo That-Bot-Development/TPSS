@@ -44,7 +44,7 @@ class Cat(BaseModule):
             if response.status_code == 200:
                 # Create a Discord embed with the cat image
                 embed = discord.Embed(title="")
-                embed.set_footer(text="Generated using CatAAS")
+                embed.set_footer(text="From CatAAS")
                 embed.set_image(url=response.url)  # Use the URL from the response
                 await interactions.response.send_message(embed=embed)
             else:
