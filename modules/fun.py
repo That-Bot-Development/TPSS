@@ -46,8 +46,10 @@ class Cat(BaseModule):
     async def cat(self, interactions: discord.Interaction, filter:str=None):
 
         try:
+            cat = None
             async with aiohttp.ClientSession() as session:
-                cat = await self.fetch(session=session,url=f"https://cataas.com/cat/{filter}")
+                cat = await self.fetch(session=session,url=f"https://cataas.com/cat/{filter}",headers={'accept':'image/*'})
+            interactions.response.send_message(file=cat)
 
         except Exception as e:
             print(f"Exception occured in 'cat' operation: {e}")
