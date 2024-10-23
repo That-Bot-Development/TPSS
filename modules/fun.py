@@ -3,9 +3,8 @@ from discord import app_commands
 
 from modules.base import BaseModule
 
-import aiohttp
 import requests
-from io import BytesIO
+import time
 
 
 class Say(BaseModule):
@@ -39,9 +38,9 @@ class Cat(BaseModule):
 
         try:
             if filter == None:
-                response = requests.get(f"https://cataas.com/cat")
+                response = requests.get(f"https://cataas.com/cat?{int(time.time())}")
             else:
-                response = requests.get(f"https://cataas.com/cat/{filter}")
+                response = requests.get(f"https://cataas.com/cat/{filter}?{int(time.time())}")
             if response.status_code == 200:
                 # Create a Discord embed with the cat image
                 embed = discord.Embed(title="")
