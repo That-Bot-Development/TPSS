@@ -3,6 +3,9 @@ from discord import app_commands
 
 from modules.base import BaseModule
 
+import aiohttp
+import asyncio
+
 
 class Say(BaseModule):
     def __init__(self, client):
@@ -25,3 +28,28 @@ class Say(BaseModule):
             print(f"Exception occured in 'say' operation: {e}")
             await interactions.response.send_message("**An error occured!**\nThis likely means That Bot does not have access to speak in this channel.\nContact an Admin if you believe this is a mistake.",ephemeral=True,delete_after=10)
 
+class Cat(BaseModule):
+    def __init__(self, client):
+        self.client = client
+    
+    async def fetch(session, url, method='GET', params=None, json=None, headers=None):
+        try:
+            async with session.request(method, url, headers, params=params, json=json) as response:
+                response.raise_for_status()
+                return await response.json()
+        except aiohttp.ClientError as e:
+            print(f"HTTP error occurred: {e}")
+            return None
+
+    @app_commands.command(name="cat", description="Provides cat.")
+    @app_commands.describe(filter="Filter what type of cat you would like provided.")
+    async def cat(self, interactions: discord.Interaction, filter:str=None):
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                cat = await fetch(session=session,url=f"https://cataas.com/cat/{filter}")
+
+        except Exception as e:
+            print(f"Exception occured in 'cat' operation: {e}")
+            await interactions.response.send_message("**An error occured!**\nThis likely means the [CatAAS API](https://cataas.com/) is down.\nContact an Admin if you believe this is a mistake.",ephemeral=True,delete_after=10)
+        
