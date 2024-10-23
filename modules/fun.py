@@ -5,6 +5,7 @@ from modules.base import BaseModule
 
 import aiohttp
 import asyncio
+from io import BytesIO
 
 
 class Say(BaseModule):
@@ -32,11 +33,11 @@ class Cat(BaseModule):
     def __init__(self, client):
         self.client = client
     
-    async def fetch(session, url, method='GET', params=None, json=None, headers=None):
+    async def fetch(session, url, method='GET', params=None, headers=None):
         try:
-            async with session.request(method, url, headers=headers, params=params, json=json) as response:
+            async with session.request(method, url, headers=headers, params=params, json=None) as response:
                 response.raise_for_status()
-                return await response.json()
+                return await response.read()
         except aiohttp.ClientError as e:
             print(f"HTTP error occurred: {e}")
             return None
@@ -47,11 +48,12 @@ class Cat(BaseModule):
 
         try:
             cat = None
-            async with aiohttp.ClientSession() as session:
-                cat = await self.fetch(session=session,url=f"https://cataas.com/cat/{filter}",headers={'accept':'image/*'})
-            interactions.response.send_message(file=cat)
+            async with aiohttp.ClientSession() as s:
+                cat = await self.fetch(s,f"https://cataas.com/cat/{filter}",headers={'accept':'image/*'})
+            file = discord.File(BytesIO(cat), filename="cat.jpg")
+            await interactions.response.send_message(file=file)
 
-        except Exception as e:
-            print(f"Exception occured in 'cat' operation: {e}")
-            await interactions.response.send_message("**An error occured!**\nThis likely means the [CatAAS API](https://cataas.com/) is down.\nContact an Admin if you believe this is a mistake.",ephemeral=True,delete_after=10)
+        #except Exception as e:
+         #   print(f"Exception occured in 'cat' operation: {e}")
+         #   await interactions.response.send_message("**An error occured!**\nThis likely means the [CatAAS API](https://cataas.com/) is down.\nContact an Admin if you believe this is a mistake.",ephemeral=True,delete_after=10)
         
