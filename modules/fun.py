@@ -58,6 +58,7 @@ class Cat(BaseModule):
         async with aiohttp.ClientSession() as s:
             cat, file_ext = await self.fetch(s,f"https://cataas.com/cat/{filter}",headers={'accept':'image/*'})
         file = discord.File(BytesIO(cat), filename=f"cat.{file_ext}")
+        print(file_ext)
         await interactions.response.send_message(file=file)
 
         #except Exception as e:
