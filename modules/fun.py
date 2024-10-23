@@ -53,14 +53,14 @@ class Cat(BaseModule):
     @app_commands.describe(filter="Filter what type of cat you would like provided.")
     async def cat(self, interactions: discord.Interaction, filter:str=None):
 
-        try:
-            cat = None
-            async with aiohttp.ClientSession() as s:
-                cat, file_ext = await self.fetch(s,f"https://cataas.com/cat/{filter}",headers={'accept':'image/*'})
-            file = discord.File(BytesIO(cat), filename=f"cat.{file_ext}")
-            await interactions.response.send_message(file=file)
+        #try:
+        cat = None
+        async with aiohttp.ClientSession() as s:
+            cat, file_ext = await self.fetch(s,f"https://cataas.com/cat/{filter}",headers={'accept':'image/*'})
+        file = discord.File(BytesIO(cat), filename=f"cat.{file_ext}")
+        await interactions.response.send_message(file=file)
 
-        except Exception as e:
-            print(f"Exception occured in 'cat' operation: {e}")
-            await interactions.response.send_message("**An error occured!**\nThis likely means the [CatAAS API](https://cataas.com/) is down.\nContact an Admin if you believe this is a mistake.",ephemeral=True,delete_after=10)
+        #except Exception as e:
+         #   print(f"Exception occured in 'cat' operation: {e}")
+         #   await interactions.response.send_message("**An error occured!**\nThis likely means the [CatAAS API](https://cataas.com/) is down.\nContact an Admin if you believe this is a mistake.",ephemeral=True,delete_after=10)
         
