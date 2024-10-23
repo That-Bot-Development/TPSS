@@ -39,6 +39,7 @@ async def init_cogs():
     await client.add_cog(bd.BanDM(client))
     await client.add_cog(sm.SuggestionManager(client))
     await client.add_cog(f.Say(client))
+    await client.add_cog(f.Cat(client))
 
 asyncio.run(init_cogs())
 
