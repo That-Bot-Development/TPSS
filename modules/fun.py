@@ -37,7 +37,14 @@ class Cat(BaseModule):
         try:
             async with session.request(method, url, headers=headers, params=params, json=None) as response:
                 response.raise_for_status()
-                return await response.read()
+                content_type = response.headers.get('Content-Type', '')
+
+                # Check if the response is an image
+                if content_type.startswith('image/'):
+                    return await response.read(), content_type.split('/')[-1]  # Return bytes and file extension
+                else:
+                    print("Response is not an image.")
+                    return None, None
         except aiohttp.ClientError as e:
             print(f"HTTP error occurred: {e}")
             return None
@@ -46,14 +53,14 @@ class Cat(BaseModule):
     @app_commands.describe(filter="Filter what type of cat you would like provided.")
     async def cat(self, interactions: discord.Interaction, filter:str=None):
 
-        #try:
-        cat = None
-        async with aiohttp.ClientSession() as s:
-            cat = await self.fetch(s,f"https://cataas.com/cat/{filter}",headers={'accept':'image/*'})
-        file = discord.File(BytesIO(cat), filename="cat.jpg")
-        await interactions.response.send_message(file=file)
+        try:
+            cat = None
+            async with aiohttp.ClientSession() as s:
+                cat, file_ext = await self.fetch(s,f"https://cataas.com/cat/{filter}",headers={'accept':'image/*'})
+            file = discord.File(BytesIO(cat), filename=f"cat.{file_ext}")
+            await interactions.response.send_message(file=file)
 
-        #except Exception as e:
-         #   print(f"Exception occured in 'cat' operation: {e}")
-         #   await interactions.response.send_message("**An error occured!**\nThis likely means the [CatAAS API](https://cataas.com/) is down.\nContact an Admin if you believe this is a mistake.",ephemeral=True,delete_after=10)
+        except Exception as e:
+            print(f"Exception occured in 'cat' operation: {e}")
+            await interactions.response.send_message("**An error occured!**\nThis likely means the [CatAAS API](https://cataas.com/) is down.\nContact an Admin if you believe this is a mistake.",ephemeral=True,delete_after=10)
         
