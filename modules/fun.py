@@ -34,7 +34,7 @@ class Cat(BaseModule):
     
     async def fetch(session, url, method='GET', params=None, json=None, headers=None):
         try:
-            async with session.request(method, url, headers, params=params, json=json) as response:
+            async with session.request(method, url, headers=headers, params=params, json=json) as response:
                 response.raise_for_status()
                 return await response.json()
         except aiohttp.ClientError as e:
@@ -47,7 +47,7 @@ class Cat(BaseModule):
 
         try:
             async with aiohttp.ClientSession() as session:
-                cat = await fetch(session=session,url=f"https://cataas.com/cat/{filter}")
+                cat = await self.fetch(session=session,url=f"https://cataas.com/cat/{filter}")
 
         except Exception as e:
             print(f"Exception occured in 'cat' operation: {e}")
