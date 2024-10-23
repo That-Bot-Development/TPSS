@@ -33,7 +33,7 @@ class Cat(BaseModule):
     def __init__(self, client):
         self.client = client
     
-    async def fetch(session, url, method='GET', params=None, headers=None):
+    async def fetch(self, session, url, method='GET', params=None, headers=None):
         try:
             async with session.request(method, url, headers=headers, params=params, json=None) as response:
                 response.raise_for_status()
