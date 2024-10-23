@@ -38,7 +38,10 @@ class Cat(BaseModule):
     async def cat(self, interactions: discord.Interaction, filter:str=None):
 
         try:
-            response = requests.get(f"https://cataas.com/cat/{filter}")
+            if filter == None:
+                response = requests.get(f"https://cataas.com/cat")
+            else:
+                response = requests.get(f"https://cataas.com/cat/{filter}")
             if response.status_code == 200:
                 # Create a Discord embed with the cat image
                 embed = discord.Embed(title="Here's a cat for you! 🐱")
