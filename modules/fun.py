@@ -55,12 +55,14 @@ class Cat(BaseModule):
                 with open(f"cat.{ext}", "wb") as file:
                     # Write the image content to the file
                     file.write(response.content)
-                    
+
+                with open(f"cat.{ext}", "rb") as file:
                     dFile = discord.File(file,filename=f"cat.{ext}")
-                    embed = discord.Embed(title="")
-                    embed.set_footer(text="From CatAAS")
-                    embed.set_image(url=f"attachment://cat.{ext}")  # Use the URL from the response
-                    await interactions.response.send_message(file=dFile,embed=embed)
+                    
+                embed = discord.Embed(title="")
+                embed.set_footer(text="From CatAAS")
+                embed.set_image(url=f"attachment://cat.{ext}")  # Use the URL from the response
+                await interactions.response.send_message(file=dFile,embed=embed)
             else:
                 print(response.status_code)
 
