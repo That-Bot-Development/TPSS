@@ -30,7 +30,7 @@ class ModMail(BaseModule):
         if active_ticket is None:
             tt_ticket_data = tt_data["ticketdata"]
 
-            new_ticket = await self.d_consts.CHANNEL_MODMAIL.create_thread(name=interaction.user.name,reason=f"Mod Mail ticket created by {interaction.user.name}")
+            new_ticket = await self.d_consts.CHANNEL_MODMAIL.create_thread(name=interaction.user.display_name,reason=f"Mod Mail ticket created by {interaction.user.display_name}")
             await new_ticket.edit(invitable=False)
             msg = await new_ticket.send(f"<@&{tt_ticket_data[0]}> {self.d_consts.ROLE_COREBOTS.mention}")
             if tt_ticket_data[0] != self.d_consts.ROLE_ADMIN.id:
