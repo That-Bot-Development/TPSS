@@ -20,8 +20,5 @@ class ArtManager(BaseModule):
             if len(message.attachments) > 0 or has_url == True:
                 # Create thread on new art posts
                 await message.create_thread(name=f"Discussion - {message.author.display_name}'s Art")
-                print("Image")
-                
             else:
                 await message.delete()
-            print(f"{has_url} and {len(message.attachments) > 0}")
