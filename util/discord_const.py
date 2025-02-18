@@ -15,7 +15,7 @@ class DiscordConstants(discord.ext.commands.Cog):
         self.client = client
 
         # Initialize all constants. Defined in define_constants on bot ready call
-        self.SERVER = self.CHANNEL_MODMAIL = self.CHANNEL_MISCLOGS = self.CHANNEL_SUGGESTIONS = self.ROLE_OWNER = self.ROLE_OWNER = self.ROLE_ADMIN = self.ROLE_MOD = self.ROLE_MMMISC = self.ROLE_COREBOTS = self.VAR_ALLOWEDMENTIONS_NONE = None
+        self.SERVER = self.CHANNEL_MODMAIL = self.CHANNEL_MISCLOGS = self.CHANNEL_SUGGESTIONS = self.CHANNEL_YOURART = self.ROLE_OWNER = self.ROLE_OWNER = self.ROLE_ADMIN = self.ROLE_MOD = self.ROLE_MMMISC = self.ROLE_COREBOTS = self.VAR_ALLOWEDMENTIONS_NONE = None
 
     @commands.Cog.listener()
     async def on_ready(self):
