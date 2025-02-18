@@ -29,6 +29,7 @@ class DiscordConstants(discord.ext.commands.Cog):
         self.CHANNEL_MODMAIL = self.SERVER.get_channel(986085007246381147)
         self.CHANNEL_MISCLOGS = self.SERVER.get_channel(608465315755720714)
         self.CHANNEL_SUGGESTIONS = self.SERVER.get_channel(1037952455188693042)
+        self.CHANNEL_YOURART = self.SERVER.get_channel(579313588972552193)
 
         # ROLES
         self.ROLE_OWNER = self.SERVER.get_role(578357103144468490)

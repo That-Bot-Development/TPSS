@@ -47,11 +47,11 @@ async def init_cogs():
     await client.add_cog(f.Say(client))
     await client.add_cog(f.Cat(client))
 
+# Initialize cogs
 asyncio.run(init_cogs())
 
 # Run bot
 client.run(asyncio.run(getToken()))
-
 
 #FIX #
 ##async def on_ready():
