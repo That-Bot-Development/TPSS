@@ -43,10 +43,26 @@ class Cat(BaseModule):
                 response = requests.get(f"https://cataas.com/cat/{filter}?{int(time.time())}")
             if response.status_code == 200:
                 # Create a Discord embed with the cat image
+                 # Get the content type (e.g., image/jpeg, image/png)
+                content_type = response.headers.get('Content-Type')
+
+                # Extract the image extension from the content type
+                if content_type:
+                    ext = content_type.split('/')[-1]  # Get the file extension (e.g., jpeg, png, gif)
+                else:
+                    ext = "bin"  # If content type isn't available, use a generic extension
+                
+                with open(f"cat.{ext}", "wb") as file:
+                    # Write the image content to the file
+                    file.write(response.content)
+
+                with open(f"cat.{ext}", "rb") as file:
+                    dFile = discord.File(file,filename=f"cat.{ext}")
+                    
                 embed = discord.Embed(title="")
                 embed.set_footer(text="From CatAAS")
-                embed.set_image(url=response.url)  # Use the URL from the response
-                await interactions.response.send_message(embed=embed)
+                embed.set_image(url=f"attachment://cat.{ext}")  # Use the URL from the response
+                await interactions.response.send_message(file=dFile,embed=embed)
             else:
                 print(response.status_code)
 

@@ -10,10 +10,10 @@ import modules.mod_mail as mm
 import modules.ban_dm as bd
 import modules.fun as f
 import modules.suggestion_manager as sm
+import modules.art_manager as am
 
 
 # Set up bot
-TOKEN = "NjA1NDk1NTMwMTM4NzYzMjg3.GwyTQb.ud3w88CLyX1SpYEoJEim-eZNukycfor1j2VEco" # IDK WHY THIS IS STILL HERE
 GUID = discord.Object(id=578356230637223936)
 intents = discord.Intents.all() 
 
@@ -28,6 +28,11 @@ class aClient(commands.Bot):
 client = aClient(intents=intents)
 
 
+async def getToken():
+     with open('private/token.txt', 'r') as file:
+        token = file.read()
+        return token
+
 # Initialize cogs
 async def init_cogs():
     # Instantiate singleton utilities & initialize reference vars
@@ -38,13 +43,14 @@ async def init_cogs():
     await client.add_cog(mm.ModMail(client))
     await client.add_cog(bd.BanDM(client))
     await client.add_cog(sm.SuggestionManager(client))
+    await client.add_cog(am.ArtManager(client))
     await client.add_cog(f.Say(client))
     await client.add_cog(f.Cat(client))
 
 asyncio.run(init_cogs())
 
 # Run bot
-client.run(TOKEN)
+client.run(asyncio.run(getToken()))
 
 
 #FIX #
