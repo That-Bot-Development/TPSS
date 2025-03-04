@@ -47,7 +47,7 @@ class PunishmentCommands(BaseModule):
                     case _:
                         raise Exception("Could not parse duration")
             except Exception as e:
-                print(f"Exception occured in 'say' operation: {e}")
+                print(f"Exception occured in 'punishment duration processing' operation: {e}")
                 await interactions.response.send_message("**An error occured!**\nThe duration could not be parsed.\nPlease ensure you follow the format provided.",ephemeral=True,delete_after=10)    
                 break
 
