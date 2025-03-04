@@ -72,7 +72,7 @@ class Cat(BaseModule):
                 embed.set_image(url=f"attachment://cat.{ext}")  # Use the URL from the response
                 await interactions.response.send_message(file=dFile,embed=embed)
             else:
-                print(response.status_code)
+                raise Exception(f"Encountered code {response.status_code}")
 
         except Exception as e:
             print(f"Exception occured in 'cat' operation: {e}")
