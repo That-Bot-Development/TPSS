@@ -3,6 +3,7 @@ from discord import app_commands
 from datetime import timedelta
 
 from modules.base import BaseModule
+from util.embed_maker import *
 
 
 class PunishmentCommands(BaseModule):
@@ -53,7 +54,12 @@ class PunishmentCommands(BaseModule):
                         raise Exception("Could not parse duration")
             except Exception as e:
                 print(f"Exception occured in 'punishment duration processing' operation: {e}")
-                await interactions.response.send_message("**An error occured!**\nThe duration could not be parsed.\nPlease ensure you follow the format provided.",ephemeral=True,delete_after=10)    
+                await interactions.response.send_message(EmbedMaker(
+                        embed_type=EmbedType.PUNISHMENT_CMD,
+                        message="The duration could not be parsed.\nPlease ensure you follow the format provided",
+                        title="err"
+                    ).create()
+                )
                 break
 
             # Reset current number once the value has been added to its respective category

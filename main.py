@@ -13,6 +13,7 @@ import modules.art_manager as am
 import modules.punishment_cmds as pc
 import modules.fun as f
 
+debug = True
 
 # Set up bot
 GUID = discord.Object(id=578356230637223936)
@@ -41,13 +42,17 @@ async def init_cogs():
     base.BaseModule.d_consts = d_consts.DiscordConstants.get()
 
     # Initialize modules
-    await client.add_cog(mm.ModMail(client))
-    await client.add_cog(bd.BanDM(client))
-    await client.add_cog(sm.SuggestionManager(client))
-    await client.add_cog(am.ArtManager(client))
-    await client.add_cog(pc.PunishmentCommands(client))
-    await client.add_cog(f.Say(client))
-    await client.add_cog(f.Cat(client))
+    if not debug:
+        await client.add_cog(mm.ModMail(client))
+        await client.add_cog(bd.BanDM(client))
+        await client.add_cog(sm.SuggestionManager(client))
+        await client.add_cog(am.ArtManager(client))
+        await client.add_cog(f.Say(client))
+        await client.add_cog(f.Cat(client))
+    else:
+        # Debug Modules
+        await client.add_cog(pc.PunishmentCommands(client))
+
 
 # Initialize cogs
 asyncio.run(init_cogs())
