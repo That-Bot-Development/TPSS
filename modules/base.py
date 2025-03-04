@@ -5,4 +5,4 @@ class BaseModule(commands.Cog):
     # "Global" items that all modules should be able to access
     d_consts = None
     bot_started = False
-    version = "2.6.2"
+    version = "2.7.0"
