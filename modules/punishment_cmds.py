@@ -26,29 +26,24 @@ class PunishmentCommands(BaseModule):
         curNum = ""
 
         for char in duration:
+            print(char)
             try:
                 match(char):
                     case _ if char.isnumeric():
                         curNum += char
                         print("Numeric")
-                        break
 
                     case 'm':
                         m += int(curNum)
                         print("Minute")
-                        break
                     case _ if char.lower() == 'h':
                         h += int(curNum)
-                        break
                     case _ if char.lower() == 'd':
                         d += int(curNum)
-                        break
                     case _ if char.lower() == 'w':
                         w += int(curNum)
-                        break
                     case 'M':
                         M += int(curNum)
-                        break
                     case _:
                         raise Exception("Could not parse duration")
             except Exception as e:
