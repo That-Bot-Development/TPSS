@@ -15,6 +15,11 @@ class PunishmentCommands(BaseModule):
         time = await self.duration_str_to_time(interactions,duration)
         member = await self.get_member(user)
         await member.timeout(time,reason=reason)
+        # TODO: Embed Formatting
+        # TODO: Link to Logging System
+        # TODO: Link to Punishment Logging System
+
+    # PUNISHMENT COMMAND UTILS
 
     async def get_member(self, user:discord.User) -> discord.Member:
         server:discord.Guild = self.d_consts.SERVER
@@ -58,7 +63,7 @@ class PunishmentCommands(BaseModule):
 
         # Timedelta does not support Months, this must be converted manually
         w += M*4
-        print(str(w) + "w, " + str(d) + "d, " + str(h) + "h, " + str(m) + "m")
+
         return timedelta(
             weeks=w,
             days=d,
