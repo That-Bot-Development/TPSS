@@ -42,7 +42,7 @@ class PunishmentCommands(BaseModule):
         expiry_f:str = expiry.strftime("%d/%m/%Y @ %H:%M:%S")
         await interactions.response.send_message(embed=EmbedMaker(
             embed_type=EmbedType.PUNISHMENT_CMD,
-            title=f"\✅ {punishment_type} Applied",
+            title=f"<:check:1346601762882326700> {punishment_type} Applied",
             message=f"{punishment_type} applied to **{member.display_name}** with reason '*{reason}*'.\n\nThis punishment will expire on `{expiry_f}`"
         ).create())
 

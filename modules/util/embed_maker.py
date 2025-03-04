@@ -37,7 +37,7 @@ class EmbedMaker(BaseModule):
                 embed.set_author(name="Miscellaneous")
         
         if self.error:
-            embed.title = "\⚠️ An error occured!"
+            embed.title = "<:warning:1346601763880304711> An error occured!"
             embed.color = 0xFF264D
         embed.set_footer(text=f"That Bot v{self.version}")
 
