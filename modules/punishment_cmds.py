@@ -21,7 +21,7 @@ class PunishmentCommands(BaseModule):
 
     
     async def duration_str_to_time(self, interactions: discord.Interaction, duration:str) -> timedelta:
-        m, h, d, w, M = 0
+        m = h = d = w = M = 0
         curNum = ""
 
         for char in duration:
