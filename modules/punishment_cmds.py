@@ -12,8 +12,9 @@ class PunishmentCommands(BaseModule):
     @app_commands.command(name="mute", description="Mutes the specified user.")
     @app_commands.describe(user="The user to be muted.",duration="The length of the punishment. (m = Minutes, h = Hours, d = Days, w = Weeks, M = Months )", reason="The reason for the punishment.")
     async def mute(self, interactions: discord.Interaction, user:discord.User, duration:str, reason:str):
-        time:timedelta = await self.duration_str_to_time(interactions,duration)
-        await self.get_member(user).timeout(time,reason=reason)
+        time = await self.duration_str_to_time(interactions,duration)
+        member = await self.get_member(user)
+        member.timeout(time,reason=reason)
 
     async def get_member(self, user:discord.User) -> discord.Member:
         server:discord.Guild = self.d_consts.SERVER
