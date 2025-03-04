@@ -11,6 +11,7 @@ class EmbedType(Enum):
     PUNISHMENT_CMD = 1
     PUNISHMENT_LOG = 2
     ACTIVITY_LOG = 3
+    MISC = 4
 
 class EmbedMaker(BaseModule):
     def __init__(self, embed_type:EmbedType, message:str, title:str="", error:bool=False):
@@ -32,6 +33,8 @@ class EmbedMaker(BaseModule):
                 embed.set_author(name="Punishment Logs")
             case EmbedType.ACTIVITY_LOG:
                 embed.set_author(name="Activity Logs")
+            case EmbedType.MISC:
+                embed.set_author(name="Miscellaneous")
         
         if self.error:
             embed.title = "\⚠️ An error occured!"

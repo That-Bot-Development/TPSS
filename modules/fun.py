@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 
 from modules.base import BaseModule
+from modules.util.embed_maker import *
 
 import requests
 import time
@@ -21,13 +22,20 @@ class Say(BaseModule):
             else:
                 response = await interactions.channel.fetch_message(replyto)
                 await response.reply(message)
-            await self.d_consts.CHANNEL_MISCLOGS.send(f"> **/say from {interactions.user.display_name}:** {message} ({response.jump_url})",silent=True,allowed_mentions=self.d_consts.VAR_ALLOWEDMENTIONS_NONE)
+            await self.d_consts.CHANNEL_MISCLOGS.send(embed=EmbedMaker(
+                embed_type=EmbedType.ACTIVITY_LOG,
+                title = "Say Command",
+                message=f"**{interactions.user.display_name}:** {message} ({response.jump_url})"
+            ).create(),silent=True,allowed_mentions=self.d_consts.VAR_ALLOWEDMENTIONS_NONE)
             await interactions.response.send_message("<:Advertisement:622603404212174849>",ephemeral=True,delete_after=0)
 
         except Exception as e:
             print(f"Exception occured in 'say' operation: {e}")
-            await interactions.response.send_message("**An error occured!**\nThis likely means That Bot does not have access to speak in this channel.\nContact an Admin if you believe this is a mistake.",ephemeral=True,delete_after=10)
-
+            await interactions.response.send_message(embed=EmbedMaker(
+                embed_type=EmbedType.MISC,
+                message="This likely means That Bot does not have access to speak in this channel.\n\nContact an Admin if you believe this is a mistake.",
+                error=True
+            ).create(),ephemeral=True,delete_after=20)
 class Cat(BaseModule):
     def __init__(self, client):
         self.client = client
@@ -68,5 +76,9 @@ class Cat(BaseModule):
 
         except Exception as e:
             print(f"Exception occured in 'cat' operation: {e}")
-            await interactions.response.send_message("**An error occured!**\nThis likely means the [CatAAS API](https://cataas.com/) is down.\nContact an Admin if you believe this is a mistake.",ephemeral=True,delete_after=10)
+            await interactions.response.send_message(embed=EmbedMaker(
+                embed_type=EmbedType.MISC,
+                message="This likely means the [CatAAS API](https://cataas.com/) is down.\n\nContact an Admin if you believe this is a mistake.",
+                error=True
+            ).create(),ephemeral=True,delete_after=20)
         
