@@ -16,7 +16,7 @@ import modules.art_manager as am
 import modules.punishment_cmds as pc
 import modules.fun as f
 
-debug = True
+debug = False
 
 # Set up bot
 GUID = discord.Object(id=578356230637223936)
@@ -35,7 +35,7 @@ client = aClient(intents=intents)
 
 async def getToken():
      with open('private/token.txt', 'r') as file:
-        token = file.read()
+        token = file.readline()
         return token
 
 # Initialize cogs
