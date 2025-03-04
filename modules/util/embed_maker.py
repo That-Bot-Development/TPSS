@@ -19,22 +19,23 @@ class EmbedMaker(BaseModule):
         self.message = message
         self.title = title
 
-    async def create(self):
+    def create(self):
         embed = discord.Embed(color=0x69B2FF, title=self.title,description=self.message)
 
         match self.embed_type:
             case EmbedType.MOD_MAIL:
-                embed.set_author("Mod Mail")
+                embed.set_author(name="Mod Mail")
             case EmbedType.PUNISHMENT_CMD:
-                embed.set_author("User Management")
+                embed.set_author(name="User Management",icon_url="https://i.imgur.com/qVFFeRM.png")
             case EmbedType.PUNISHMENT_LOG:
-                embed.set_author("Punishment Logs")
+                embed.set_author(name="Punishment Logs")
             case EmbedType.ACTIVITY_LOG:
-                embed.set_author("Activity Logs")
+                embed.set_author(name="Activity Logs")
         
         if self.title == "err":
-            embed.title = "An error occured!"
+            embed.title = "\⚠️ An error occured!"
             embed.color = 0xFF264D
+        embed.set_footer(text=f"That Bot v{self.version}")
 
         return embed
 

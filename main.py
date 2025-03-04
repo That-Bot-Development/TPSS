@@ -1,10 +1,13 @@
 import discord
 import asyncio
 
-import util.discord_const as d_consts
 from discord import app_commands
 from discord.ext import commands
 
+# Utility modules that are referenced here
+import modules.util.discord_const as d_consts
+
+# Modules
 import modules.base as base
 import modules.mod_mail as mm
 import modules.ban_dm as bd
@@ -41,7 +44,7 @@ async def init_cogs():
     await client.add_cog(d_consts.DiscordConstants(client))
     base.BaseModule.d_consts = d_consts.DiscordConstants.get()
 
-    # Initialize modules
+    # Initialize cogs
     if not debug:
         await client.add_cog(mm.ModMail(client))
         await client.add_cog(bd.BanDM(client))

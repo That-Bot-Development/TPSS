@@ -1,9 +1,9 @@
 import discord
 from discord import app_commands
-from datetime import timedelta
+from datetime import *
 
 from modules.base import BaseModule
-from util.embed_maker import *
+from modules.util.embed_maker import *
 
 
 class PunishmentCommands(BaseModule):
@@ -11,16 +11,40 @@ class PunishmentCommands(BaseModule):
         self.client = client
 
     @app_commands.command(name="mute", description="Mutes the specified user.")
-    @app_commands.describe(user="The user to be muted.",duration="The length of the punishment. (m = Minutes, h = Hours, d = Days, w = Weeks, M = Months )", reason="The reason for the punishment.")
+    @app_commands.describe(user="The user to be muted.",duration="The length of the punishment. (m = Minutes, h = Hours, d = Days, w = Weeks, M = Months)", reason="The reason for the punishment.")
     async def mute(self, interactions: discord.Interaction, user:discord.User, duration:str, reason:str):
         time = await self.duration_str_to_time(interactions,duration)
         member = await self.get_member(user)
-        await member.timeout(time,reason=reason)
+        try:
+            await member.timeout(time,reason=reason)
+        except Exception as e:
+            await self.create_punishment_err(interactions,"mute",e)
+            return
+        
+        await self.create_punishment_success_msg(interactions,"mute",member,member.timed_out_until,reason)
         # TODO: Embed Formatting
         # TODO: Link to Logging System
         # TODO: Link to Punishment Logging System
 
     # PUNISHMENT COMMAND UTILS
+
+
+    async def create_punishment_err(self, interactions:discord.Interaction, punishment_type:str, e:Exception):
+        print(f"Exception occured in '{punishment_type}' operation: {e}")
+        await interactions.response.send_message(embed=EmbedMaker(
+            embed_type=EmbedType.PUNISHMENT_CMD,
+            message="The user could not be punished.\nPlease ensure you have the required permissions.\n\nIf the issue persists, contact an admin.",
+            title="err"
+        ).create(),ephemeral=True,delete_after=20)
+
+    async def create_punishment_success_msg(self, interactions:discord.Interaction, punishment_type:str, member:discord.Member, expiry:datetime, reason:str):
+        punishment_type = punishment_type.capitalize()
+        expiry_f:str = expiry.strftime("%d/%m/%Y @ %H:%M:%S")
+        await interactions.response.send_message(embed=EmbedMaker(
+            embed_type=EmbedType.PUNISHMENT_CMD,
+            message=f"{punishment_type} applied to **{member.display_name}** with reason '*{reason}*'.\n\nThis punishment will expire on `{expiry_f}`",
+            title=f"\✅ {punishment_type} Applied"
+        ).create())
 
     async def get_member(self, user:discord.User) -> discord.Member:
         server:discord.Guild = self.d_consts.SERVER
@@ -28,7 +52,7 @@ class PunishmentCommands(BaseModule):
 
     
     async def duration_str_to_time(self, interactions: discord.Interaction, duration:str) -> timedelta:
-        m = h = d = w = M = 0
+        m = h = d = w = 0
         curNum = ""
 
         for char in duration:
@@ -49,26 +73,24 @@ class PunishmentCommands(BaseModule):
                     case _ if char.lower() == 'w':
                         w += int(curNum)
                     case 'M':
-                        M += int(curNum)
+                        # Timedelta does not support Months, this must be converted manually
+                        w += int(curNum)*4
+                    case ' ':
+                        pass
                     case _:
                         raise Exception("Could not parse duration")
             except Exception as e:
                 print(f"Exception occured in 'punishment duration processing' operation: {e}")
-                await interactions.response.send_message(EmbedMaker(
-                        embed_type=EmbedType.PUNISHMENT_CMD,
-                        message="The duration could not be parsed.\nPlease ensure you follow the format provided",
-                        title="err"
-                    ).create()
-                )
+                await interactions.response.send_message(embed=EmbedMaker(
+                    embed_type=EmbedType.PUNISHMENT_CMD,
+                    message="The duration could not be parsed.\nPlease ensure you follow the provided format:\n> m = Minutes, h = Hours, d = Days, w = Weeks, M = Months\n*ex.* **2d 5h**",
+                    title="err"
+                ).create(),ephemeral=True,delete_after=20)
                 break
 
             # Reset current number once the value has been added to its respective category
             if (char.isalpha()):
                 curNum = ""
-
-
-        # Timedelta does not support Months, this must be converted manually
-        w += M*4
 
         return timedelta(
             weeks=w,
