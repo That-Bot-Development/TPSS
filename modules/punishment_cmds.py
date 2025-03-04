@@ -61,7 +61,7 @@ class PunishmentCommands(BaseModule):
 
         # Timedelta does not support Months, this must be converted manually
         w += M*4
-        print(w + "w, " + d + "d, " + h + "h, " + m + "m")
+        print(str(w) + "w, " + str(d) + "d, " + str(h) + "h, " + str(m) + "m")
         return timedelta(
             weeks=w,
             days=d,
