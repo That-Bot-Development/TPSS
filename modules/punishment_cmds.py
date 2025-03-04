@@ -14,7 +14,7 @@ class PunishmentCommands(BaseModule):
     async def mute(self, interactions: discord.Interaction, user:discord.User, duration:str, reason:str):
         time = await self.duration_str_to_time(interactions,duration)
         member = await self.get_member(user)
-        member.timeout(time,reason=reason)
+        await member.timeout(time,reason=reason)
 
     async def get_member(self, user:discord.User) -> discord.Member:
         server:discord.Guild = self.d_consts.SERVER
