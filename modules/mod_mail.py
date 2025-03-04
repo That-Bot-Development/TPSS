@@ -38,8 +38,8 @@ class ModMail(BaseModule):
                 await msg.edit(content=f"{self.d_consts.ROLE_MOD.mention} {self.d_consts.ROLE_ADMIN.mention} {self.d_consts.ROLE_OWNER.mention}")
             await msg.edit(content="",embed=EmbedMaker(
                 embed_type=EmbedType.MOD_MAIL,
-                title=f"{tt_ticket_data[1]} Ticket",
-                message=f"New {tt_ticket_data[1]} ticket from **{interaction.user.display_name}**.\n\nStaff can close the ticket with `/close`."
+                title=f"{str(tt_ticket_data[1]).title()} Ticket",
+                message=f"New {tt_ticket_data[1]} ticket from **{interaction.user.display_name}**.\n\n-# Staff can close the ticket with `/close`."
             ).create())
 
             await interaction.response.send_message(embed=EmbedMaker(
@@ -112,13 +112,25 @@ class ModMail(BaseModule):
         view.add_item(mm_select)
 
         msg = await self.d_consts.CHANNEL_MODMAIL.fetch_message(1040873181159886909)
-        await msg.edit(content="**Use the dropdown below to create a modmail ticket.**\nOnce you select an option, a thread will be created where you can speak with the staff team directly.\n*Any non-serious tickets must be submitted as 'Other'.*\n\n*That Place Mod Mail v2. Report any issues to <@306938348361220097>.*", view=view)
+        await msg.edit(content="", embed=EmbedMaker(
+            embed_type=EmbedType.MOD_MAIL,
+            title="That Place Mod Mail",
+            message="**Use the dropdown below to create a modmail ticket.**\nOnce you select an option, a thread will be created where you can speak with the staff team directly.\n\n*Any non-serious tickets must be submitted as 'Other'.*"
+        ).create(),view=view)
 
     @app_commands.command(name="close", description="Closes the mod mail ticket that the command is sent in.")
     async def close(self, interactions: discord.Interaction):
         if interactions.channel in self.d_consts.CHANNEL_MODMAIL.threads:
-            await interactions.response.send_message(f"**Ticked closed by {interactions.user.mention}.**")
-            await self.d_consts.CHANNEL_MISCLOGS.send(f"> **Ticket Closed: {interactions.channel.mention}**")
+            await interactions.response.send_message(embed=EmbedMaker(
+                embed_type=EmbedType.MOD_MAIL,
+                title="Ticket Closed",
+                message=f"Closed by {interactions.user.display_name}."
+            ).create())
+            await self.d_consts.CHANNEL_MISCLOGS.send(embed=EmbedMaker(
+                embed_type=EmbedType.MOD_MAIL,
+                title="Ticket Closed",
+                message=f"{interactions.channel.mention}"
+            ).create())
             await interactions.channel.edit(archived=True,locked=True)
 
     @commands.Cog.listener()
