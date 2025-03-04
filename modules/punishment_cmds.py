@@ -30,10 +30,12 @@ class PunishmentCommands(BaseModule):
                 match(char):
                     case _ if char.isnumeric():
                         curNum += char
+                        print("Numeric")
                         break
 
                     case 'm':
                         m += int(curNum)
+                        print("Minute")
                         break
                     case _ if char.lower() == 'h':
                         h += int(curNum)
