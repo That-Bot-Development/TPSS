@@ -1,8 +1,10 @@
 import discord
 from discord.ext import commands
 
+from modules.base import BaseModule
 
-class DiscordConstants(discord.ext.commands.Cog):
+
+class DiscordConstants(BaseModule):
     _instance = None
 
     # Define as singleton

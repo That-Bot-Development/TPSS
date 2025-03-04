@@ -1,17 +1,22 @@
 import discord
 import asyncio
 
-import util.discord_const as d_consts
 from discord import app_commands
 from discord.ext import commands
 
+# Utility modules that are referenced here
+import modules.util.discord_const as d_consts
+
+# Modules
 import modules.base as base
 import modules.mod_mail as mm
 import modules.ban_dm as bd
 import modules.suggestion_manager as sm
 import modules.art_manager as am
+import modules.punishment_cmds as pc
 import modules.fun as f
 
+debug = False
 
 # Set up bot
 GUID = discord.Object(id=578356230637223936)
@@ -30,7 +35,7 @@ client = aClient(intents=intents)
 
 async def getToken():
      with open('private/token.txt', 'r') as file:
-        token = file.read()
+        token = file.readline()
         return token
 
 # Initialize cogs
@@ -39,13 +44,18 @@ async def init_cogs():
     await client.add_cog(d_consts.DiscordConstants(client))
     base.BaseModule.d_consts = d_consts.DiscordConstants.get()
 
-    # Initialize modules
-    await client.add_cog(mm.ModMail(client))
-    await client.add_cog(bd.BanDM(client))
-    await client.add_cog(sm.SuggestionManager(client))
-    await client.add_cog(am.ArtManager(client))
-    await client.add_cog(f.Say(client))
-    await client.add_cog(f.Cat(client))
+    # Initialize cogs
+    if not debug:
+        await client.add_cog(mm.ModMail(client))
+        await client.add_cog(bd.BanDM(client))
+        await client.add_cog(sm.SuggestionManager(client))
+        await client.add_cog(am.ArtManager(client))
+        await client.add_cog(f.Say(client))
+        await client.add_cog(f.Cat(client))
+    else:
+        # Debug Modules
+        await client.add_cog(pc.PunishmentCommands(client))
+
 
 # Initialize cogs
 asyncio.run(init_cogs())
