@@ -5,6 +5,7 @@ from discord import app_commands
 
 from modules.base import BaseModule
 from modules.modmail.ticket_types import ReportMember, StateQuestionConcern, SuggestPoll, ReportMod, ReportEventManager, Other
+from modules.util.embed_maker import *
 
 
 class ModMail(BaseModule):
@@ -25,21 +26,33 @@ class ModMail(BaseModule):
                         return thread
         return None
 
-    async def create_ticket(self, interaction,tt_data):
+    async def create_ticket(self, interaction:discord.Interaction,tt_data):
         active_ticket = await self.get_ticket(interaction.user)
         if active_ticket is None:
             tt_ticket_data = tt_data["ticketdata"]
 
             new_ticket = await self.d_consts.CHANNEL_MODMAIL.create_thread(name=interaction.user.display_name,reason=f"Mod Mail ticket created by {interaction.user.display_name}")
             await new_ticket.edit(invitable=False)
-            msg = await new_ticket.send(f"<@&{tt_ticket_data[0]}> {self.d_consts.ROLE_COREBOTS.mention}")
+            msg:discord.Message = await new_ticket.send(f"<@&{tt_ticket_data[0]}> {self.d_consts.ROLE_COREBOTS.mention} {interaction.user.mention}")
             if tt_ticket_data[0] != self.d_consts.ROLE_ADMIN.id:
                 await msg.edit(content=f"{self.d_consts.ROLE_MOD.mention} {self.d_consts.ROLE_ADMIN.mention} {self.d_consts.ROLE_OWNER.mention}")
-            await msg.edit(content=f"**New {tt_ticket_data[1]} ticket from {interaction.user.mention}.**\n*Staff can close the ticket with `/close`.*")
+            await msg.edit(content="",embed=EmbedMaker(
+                embed_type=EmbedType.MOD_MAIL,
+                title=f"{tt_ticket_data[1]} Ticket",
+                message=f"New {tt_ticket_data[1]} ticket from **{interaction.user.display_name}**.\n\nStaff can close the ticket with `/close`."
+            ).create())
 
-            await interaction.response.send_message(f"Your {tt_ticket_data[1]} ticket has been created! You can find it and send your {tt_ticket_data[1]} here: <#{new_ticket.id}>",ephemeral=True)
+            await interaction.response.send_message(embed=EmbedMaker(
+                embed_type=EmbedType.MOD_MAIL,
+                title="Ticket Created",
+                message=f"Your {tt_ticket_data[1]} ticket has been created! You can find it and send your {tt_ticket_data[1]} here: <#{new_ticket.id}>"
+            ).create(),ephemeral=True,delete_after=120)
         else:
-            await interaction.response.send_message(f"You already have an active ticket! You can find it here: <#{active_ticket.id}>",ephemeral=True)
+            await interaction.response.send_message(embed=EmbedMaker(
+                embed_type=EmbedType.MOD_MAIL,
+                message=f"You already have an active ticket! You can find it here: <#{active_ticket.id}>",
+                error=True
+            ).create(),ephemeral=True,delete_after=120)
 
     async def get_ticket_type_data(self, select):
         '''Function to get data for the ticket type selection.'''

@@ -13,18 +13,19 @@ class EmbedType(Enum):
     ACTIVITY_LOG = 3
 
 class EmbedMaker(BaseModule):
-    def __init__(self, embed_type:EmbedType, message:str, title):
+    def __init__(self, embed_type:EmbedType, message:str, title:str="", error:bool=False):
         #self.client = client
         self.embed_type = embed_type
         self.message = message
         self.title = title
+        self.error = error
 
     def create(self):
         embed = discord.Embed(color=0x69B2FF, title=self.title,description=self.message)
 
         match self.embed_type:
             case EmbedType.MOD_MAIL:
-                embed.set_author(name="Mod Mail")
+                embed.set_author(name="Mod Mail",icon_url="https://i.imgur.com/qY9GMcV.png")
             case EmbedType.PUNISHMENT_CMD:
                 embed.set_author(name="User Management",icon_url="https://i.imgur.com/qVFFeRM.png")
             case EmbedType.PUNISHMENT_LOG:
@@ -32,7 +33,7 @@ class EmbedMaker(BaseModule):
             case EmbedType.ACTIVITY_LOG:
                 embed.set_author(name="Activity Logs")
         
-        if self.title == "err":
+        if self.error:
             embed.title = "\⚠️ An error occured!"
             embed.color = 0xFF264D
         embed.set_footer(text=f"That Bot v{self.version}")
