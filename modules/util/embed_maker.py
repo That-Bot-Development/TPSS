@@ -8,10 +8,9 @@ from modules.base import BaseModule
 
 class EmbedType(Enum):
     MOD_MAIL = 0
-    PUNISHMENT_CMD = 1
-    PUNISHMENT_LOG = 2
-    ACTIVITY_LOG = 3
-    MISC = 4
+    USER_MANAGEMENT = 1
+    ACTIVITY_LOG = 2
+    MISC = 3
 
 class EmbedMaker(BaseModule):
     def __init__(self, embed_type:EmbedType, message:str, title:str="", error:bool=False):
@@ -27,17 +26,15 @@ class EmbedMaker(BaseModule):
         match self.embed_type:
             case EmbedType.MOD_MAIL:
                 embed.set_author(name="Mod Mail",icon_url="https://i.imgur.com/qY9GMcV.png")
-            case EmbedType.PUNISHMENT_CMD:
+            case EmbedType.USER_MANAGEMENT:
                 embed.set_author(name="User Management",icon_url="https://i.imgur.com/qVFFeRM.png")
-            case EmbedType.PUNISHMENT_LOG:
-                embed.set_author(name="Punishment Logs")
             case EmbedType.ACTIVITY_LOG:
                 embed.set_author(name="Activity Logs")
             case EmbedType.MISC:
                 embed.set_author(name="Miscellaneous")
         
         if self.error:
-            embed.title = "<:alert:1346601763880304711> An error occured!"
+            embed.title = "<:alert:1346654360012329044> An error occured!"
             embed.color = 0xFF264D
         embed.set_footer(text=f"That Bot v{self.version}")
 

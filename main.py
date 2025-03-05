@@ -40,7 +40,7 @@ async def getToken():
 
 # Initialize cogs
 async def init_cogs():
-    # Instantiate singleton utilities & initialize reference vars
+    # Instantiate utilities that require client & initialize reference vars
     await client.add_cog(d_consts.DiscordConstants(client))
     base.BaseModule.d_consts = d_consts.DiscordConstants.get()
 

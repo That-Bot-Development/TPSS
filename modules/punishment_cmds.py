@@ -32,7 +32,7 @@ class PunishmentCommands(BaseModule):
     async def create_punishment_err(self, interactions:discord.Interaction, punishment_type:str, e:Exception):
         print(f"Exception occured in '{punishment_type}' operation: {e}")
         await interactions.response.send_message(embed=EmbedMaker(
-            embed_type=EmbedType.PUNISHMENT_CMD,
+            embed_type=EmbedType.USER_MANAGEMENT,
             message="The user could not be punished.\nPlease ensure you have the required permissions.\n\nIf the issue persists, contact an admin.",
             error=True
         ).create(),ephemeral=True,delete_after=20)
@@ -41,7 +41,7 @@ class PunishmentCommands(BaseModule):
         punishment_type = punishment_type.capitalize()
         expiry_f:str = expiry.strftime("%d/%m/%Y @ %H:%M:%S")
         await interactions.response.send_message(embed=EmbedMaker(
-            embed_type=EmbedType.PUNISHMENT_CMD,
+            embed_type=EmbedType.USER_MANAGEMENT,
             title=f"<:check:1346601762882326700> {punishment_type} Applied",
             message=f"{punishment_type} applied to **{member.display_name}** with reason '*{reason}*'.\n\nThis punishment will expire on `{expiry_f}`"
         ).create())
@@ -82,7 +82,7 @@ class PunishmentCommands(BaseModule):
             except Exception as e:
                 print(f"Exception occured in 'punishment duration processing' operation: {e}")
                 await interactions.response.send_message(embed=EmbedMaker(
-                    embed_type=EmbedType.PUNISHMENT_CMD,
+                    embed_type=EmbedType.USER_MANAGEMENT,
                     message="The duration could not be parsed.\nPlease ensure you follow the provided format:\n> m = Minutes, h = Hours, d = Days, w = Weeks, M = Months\n*ex.* **2d 5h**",
                     error=True
 
