@@ -48,18 +48,28 @@ class SQLManager:
         # Execute a query with parameters
         connection = self.get_connection()
         cursor = connection.cursor(dictionary=True)
+        result = None  # Default result
+        
         try:
             cursor.execute(query, params or ())
 
-            # If it's a SELECT query, fetch the results
-            if query.strip().lower().startswith("select"):
-                result = cursor.fetchall()  # Get all the rows
+            # If it's an INSERT query, fetch the last inserted ID
+            if query.strip().lower().startswith("insert"):
+                connection.commit()  # Commit changes for insert/update/delete
+                last_inserted_id_query = "SELECT * FROM Punishments WHERE CaseNo = LAST_INSERT_ID()"
+                cursor.execute(last_inserted_id_query)
+                result = cursor.fetchall()
+
+            # For SELECT queries, fetch the results
+            elif query.strip().lower().startswith("select"):
+                result = cursor.fetchall()
+
+            # For other queries (UPDATE, DELETE), commit the changes
             else:
-                # For non-SELECT queries (INSERT, UPDATE, DELETE), commit the changes
                 connection.commit()
-                result = None  # No result for insert/update/delete queries
 
             return result
+
         except mysql.connector.Error as e:
             if handle_except:
                 print(f"Database query error: {e}")
@@ -68,6 +78,7 @@ class SQLManager:
         finally:
             cursor.close()
             connection.close()
+
 
     def close_pool(self):
         # Close the connection pool
