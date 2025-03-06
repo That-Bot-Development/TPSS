@@ -44,7 +44,7 @@ class SQLManager:
             raise Exception("Connection pool is not initialized.")
         return self.pool.get_connection()
 
-    def execute_query(self, query:str, params=None):
+    def execute_query(self, query:str, params=None, handle_except=True):
         # Execute a query with parameters
         connection = self.get_connection()
         cursor = connection.cursor(dictionary=True)
@@ -53,7 +53,10 @@ class SQLManager:
             connection.commit()
             return cursor.fetchall()
         except mysql.connector.Error as e:
-            print(f"Database query error: {e}")
+            if handle_except:
+                print(f"Database query error: {e}")
+            else:
+                raise
         finally:
             cursor.close()
             connection.close()
