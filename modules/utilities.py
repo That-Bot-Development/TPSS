@@ -18,7 +18,7 @@ class SQLQuery(BaseModule):
             return
         
         try:
-            result = self.sql.execute_query(query=query)
+            result = self.sql.execute_query(query=query,handle_except=False)
         except Exception as e:
             print(f"Exception occured in 'query' operation: {e}")
             await interactions.response.send_message(embed=EmbedMaker(
