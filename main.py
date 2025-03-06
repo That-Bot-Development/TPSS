@@ -4,8 +4,9 @@ import asyncio
 from discord import app_commands
 from discord.ext import commands
 
-# Utility modules that are referenced here
+# Utility modules that require set-up here
 import modules.util.discord_const as d_consts
+import modules.util.sql_manager as sql
 
 # Modules
 import modules.base as base
@@ -32,7 +33,6 @@ class aClient(commands.Bot):
 
 client = aClient(intents=intents)
 
-
 async def getToken():
      with open('private/token.txt', 'r') as file:
         token = file.readline()
@@ -40,9 +40,11 @@ async def getToken():
 
 # Initialize cogs
 async def init_cogs():
-    # Instantiate utilities that require client & initialize reference vars
+    # Instantiate utilities & initialize reference vars
     await client.add_cog(d_consts.DiscordConstants(client))
+
     base.BaseModule.d_consts = d_consts.DiscordConstants.get()
+    base.BaseModule.sql = sql.SQLManager()
 
     # Initialize cogs
     if not debug:
