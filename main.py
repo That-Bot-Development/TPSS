@@ -16,6 +16,7 @@ import modules.suggestion_manager as sm
 import modules.art_manager as am
 import modules.punishment_cmds as pc
 import modules.fun as f
+import modules.utilities as u
 
 debug = False
 
@@ -54,6 +55,7 @@ async def init_cogs():
         await client.add_cog(am.ArtManager(client))
         await client.add_cog(f.Say(client))
         await client.add_cog(f.Cat(client))
+        await client.add_cog(u.SQLQuery(client))
     else:
         # Debug Modules
         await client.add_cog(pc.PunishmentCommands(client))
