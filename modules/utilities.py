@@ -4,6 +4,8 @@ from discord import app_commands
 from modules.base import BaseModule
 from modules.util.embed_maker import *
 
+import mysql.connector as my_sql
+
 
 class SQLQuery(BaseModule):
     def __init__(self, client):
@@ -17,11 +19,11 @@ class SQLQuery(BaseModule):
         
         try:
             result = self.sql.execute_query(query=query)
-        except Exception as e:
+        except my_sql.Error as e:
             print(f"Exception occured in 'query' operation: {e}")
             await interactions.response.send_message(embed=EmbedMaker(
                 embed_type=EmbedType.MISC,
-                message=str(e),
+                message=f"SQL Error: **{e.args[0]}**\n{e.args[1]}",
                 error=True
             ).create(),ephemeral=True,delete_after=20)
             return
