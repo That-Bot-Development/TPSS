@@ -21,7 +21,7 @@ class SQLQuery(BaseModule):
             print(f"Exception occured in 'query' operation: {e}")
             await interactions.response.send_message(embed=EmbedMaker(
                 embed_type=EmbedType.MISC,
-                message=e,
+                message=str(e),
                 error=True
             ).create(),ephemeral=True,delete_after=20)
             return
