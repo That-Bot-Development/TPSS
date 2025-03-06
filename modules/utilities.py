@@ -32,6 +32,6 @@ class SQLQuery(BaseModule):
             embed_type=EmbedType.MISC,
             title="Query Result",
             message=result
-        ))
+        ).create())
 
         
