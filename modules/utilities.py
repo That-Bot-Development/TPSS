@@ -25,7 +25,7 @@ class SQLQuery(BaseModule):
                 embed_type=EmbedType.MISC,
                 message=f"{e}",
                 error=True
-            ).create(),ephemeral=True,delete_after=20)
+            ).create())
             return
 
         await interactions.response.send_message(embed=EmbedMaker(

@@ -55,10 +55,10 @@ async def init_cogs():
         await client.add_cog(am.ArtManager(client))
         await client.add_cog(f.Say(client))
         await client.add_cog(f.Cat(client))
-        await client.add_cog(u.SQLQuery(client))
     else:
         # Debug Modules
         await client.add_cog(pc.PunishmentCommands(client))
+        await client.add_cog(u.SQLQuery(client))
 
 
 # Initialize cogs

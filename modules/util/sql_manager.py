@@ -44,14 +44,22 @@ class SQLManager:
             raise Exception("Connection pool is not initialized.")
         return self.pool.get_connection()
 
-    def execute_query(self, query:str, params=None, handle_except=True):
+    def execute_query(self, query: str, params=None, handle_except=True):
         # Execute a query with parameters
         connection = self.get_connection()
         cursor = connection.cursor(dictionary=True)
         try:
             cursor.execute(query, params or ())
-            connection.commit()
-            return cursor.fetchall()
+
+            # If it's a SELECT query, fetch the results
+            if query.strip().lower().startswith("select"):
+                result = cursor.fetchall()  # Get all the rows
+            else:
+                # For non-SELECT queries (INSERT, UPDATE, DELETE), commit the changes
+                connection.commit()
+                result = None  # No result for insert/update/delete queries
+
+            return result
         except mysql.connector.Error as e:
             if handle_except:
                 print(f"Database query error: {e}")
