@@ -44,9 +44,11 @@ class SQLManager:
             raise Exception("Connection pool is not initialized.")
         return self.pool.get_connection()
 
-    def execute_query(self, query: str, params=None, handle_except=True):
-        # Execute a query with parameters
-        connection = self.get_connection()
+    def execute_query(self, query: str, params=None, handle_except=True,connection=None):
+        # Create a new connection if not provided
+        if not connection:
+            connection = self.get_connection()
+
         cursor = connection.cursor(dictionary=True)
         result = None  # Default result
         
@@ -77,7 +79,10 @@ class SQLManager:
                 raise
         finally:
             cursor.close()
-            connection.close()
+
+            # Close the connection (if not externally provided)
+            if not connection:
+                connection.close()
 
 
     def close_pool(self):

@@ -4,30 +4,55 @@ from datetime import *
 
 from modules.base import BaseModule
 from modules.util.embed_maker import *
+from modules.util.sql_manager import SQLManager
 
 
-class PunishmentCommands(BaseModule):
+class PunishmentCommands(BaseModule): # Split? 
     def __init__(self, client):
         self.client = client
 
     @app_commands.command(name="mute", description="Mutes the specified user.")
     @app_commands.describe(user="The user to be muted.",duration="The length of the punishment. (m = Minutes, h = Hours, d = Days, w = Weeks, M = Months)", reason="The reason for the punishment.")
     async def mute(self, interactions: discord.Interaction, user:discord.User, duration:str, reason:str):
+        pun_type = "mute"
+
         time = await self.duration_str_to_time(interactions,duration)
         member = await self.get_member(user)
+
+        # Issue a Discord Timeout on this user
         try:
             await member.timeout(time,reason=reason)
         except Exception as e:
-            await self.create_punishment_err(interactions,"mute",e)
+            await self.create_punishment_err(interactions,pun_type,e)
             return
         
-        await self.create_punishment_success_msg(interactions,"mute",member,member.timed_out_until,reason)
-        # TODO: Embed Formatting
+        id = await self.log_to_db(
+            user_id=member.id,
+            punishment_type=pun_type,
+            reason=reason,
+            issued_by_id=interactions.user.id
+            ,expires=member.timed_out_until.strftime('%Y-%m-%d %H:%M:%S')
+        
+        )
+        await self.create_punishment_success_msg(interactions,(pun_type,id),member,member.timed_out_until,reason)
         # TODO: Link to Logging System
-        # TODO: Link to Punishment Logging System
 
-    # PUNISHMENT COMMAND UTILS
+    # PUNISHMENT COMMAND INTERNAL FUNCTIONS
 
+    async def log_to_db(self, user_id:int, punishment_type:str, reason:str, issued_by_id:int, expires:datetime=None):
+        connection = self.sql.get_connection()
+        
+        self.sql.execute_query("""
+            INSERT INTO Punishments (UserID, Type, Reason, IssuedByID, ExpiresAt) 
+            VALUES (%s,%s,%s,%s,%s)
+        """,(user_id,punishment_type,reason,issued_by_id,expires),connection=connection)
+
+        result = self.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = LAST_INSERT_ID()",connection=connection)
+        id = result[0]['CaseNo'] if result else "?"
+
+        connection.close()
+
+        return id
 
     async def create_punishment_err(self, interactions:discord.Interaction, punishment_type:str, e:Exception):
         print(f"Exception occured in '{punishment_type}' operation: {e}")
@@ -37,13 +62,15 @@ class PunishmentCommands(BaseModule):
             error=True
         ).create(),ephemeral=True,delete_after=20)
 
-    async def create_punishment_success_msg(self, interactions:discord.Interaction, punishment_type:str, member:discord.Member, expiry:datetime, reason:str):
-        punishment_type = punishment_type.capitalize()
+    async def create_punishment_success_msg(self, interactions:discord.Interaction, punishment_info:tuple, member:discord.Member, expiry:datetime, reason:str):
+        punishment_type = punishment_info[0].capitalize()
+        punishment_id = punishment_info[1]
+        
         expiry_f:str = expiry.strftime("%d/%m/%Y @ %H:%M:%S")
         await interactions.response.send_message(embed=EmbedMaker(
             embed_type=EmbedType.USER_MANAGEMENT,
             title=f"<:check:1346601762882326700> {punishment_type} Applied",
-            message=f"{punishment_type} applied to **{member.display_name}** with reason '*{reason}*'.\n\nThis punishment will expire on `{expiry_f}`"
+            message=f"**Case #{punishment_id}**: {punishment_type} applied to **{member.display_name}** with reason '*{reason}*'.\n\nThis punishment will expire on `{expiry_f}`"
         ).create())
 
     async def get_member(self, user:discord.User) -> discord.Member:
