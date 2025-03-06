@@ -18,7 +18,7 @@ class SQLQuery(BaseModule):
         result = self.sql.execute_query(query=query)
 
         interactions.response.send_message(embed=EmbedMaker(
-            embed_type=EmbedType.MISC
+            embed_type=EmbedType.MISC,
             title="Query Result",
             message=result
         ))
