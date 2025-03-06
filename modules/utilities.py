@@ -19,11 +19,11 @@ class SQLQuery(BaseModule):
         
         try:
             result = self.sql.execute_query(query=query)
-        except my_sql.Error as e:
+        except Exception as e:
             print(f"Exception occured in 'query' operation: {e}")
             await interactions.response.send_message(embed=EmbedMaker(
                 embed_type=EmbedType.MISC,
-                message=f"SQL Error: **{e.args[0]}**\n{e.args[1]}",
+                message=f"{e}",
                 error=True
             ).create(),ephemeral=True,delete_after=20)
             return
