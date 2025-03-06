@@ -14,10 +14,19 @@ class SQLQuery(BaseModule):
     async def query(self, interactions: discord.Interaction, query:str):
         if not self.d_consts.ROLE_ADMIN in interactions.user.roles:
             return
-         
-        result = self.sql.execute_query(query=query)
+        
+        try:
+            result = self.sql.execute_query(query=query)
+        except Exception as e:
+            print(f"Exception occured in 'query' operation: {e}")
+            await interactions.response.send_message(embed=EmbedMaker(
+                embed_type=EmbedType.MISC,
+                message=e,
+                error=True
+            ).create(),ephemeral=True,delete_after=20)
+            return
 
-        interactions.response.send_message(embed=EmbedMaker(
+        await interactions.response.send_message(embed=EmbedMaker(
             embed_type=EmbedType.MISC,
             title="Query Result",
             message=result
