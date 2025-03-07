@@ -40,7 +40,7 @@ class SQLQuery(BaseModule):
                 result_f += "\n".join(f"{key}: {value}" for key, value in row.items())
                 result_f += "\n\n"  # Add space between rows for readability
         else:
-            result_f = "Changes Applied"
+            result_f = "Changes applied"
 
         await interactions.response.send_message(embed=EmbedMaker(
             embed_type=EmbedType.MISC,

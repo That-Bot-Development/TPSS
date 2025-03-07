@@ -44,7 +44,7 @@ class SQLManager:
             raise Exception("Connection pool is not initialized.")
         return self.pool.get_connection()
 
-    def execute_query(self, query: str, params=None, handle_except=True,connection=None):
+    def execute_query(self, query: str, params=None, insert_return_query=None, handle_except=True, connection=None):
         # Create a new connection if not provided
         if not connection:
             connection = self.get_connection()
@@ -58,9 +58,10 @@ class SQLManager:
             # If it's an INSERT query, fetch the last inserted ID
             if query.strip().lower().startswith("insert"):
                 connection.commit()  # Commit changes for insert/update/delete
-                last_inserted_id_query = "SELECT * FROM Punishments WHERE CaseNo = LAST_INSERT_ID()"
-                cursor.execute(last_inserted_id_query)
-                result = cursor.fetchall()
+                if insert_return_query:
+                    last_inserted_id_query = insert_return_query #"SELECT * FROM Punishments WHERE CaseNo = LAST_INSERT_ID()"
+                    cursor.execute(last_inserted_id_query)
+                    result = cursor.fetchall()
 
             # For SELECT queries, fetch the results
             elif query.strip().lower().startswith("select"):
@@ -71,7 +72,6 @@ class SQLManager:
                 connection.commit()
 
             return result
-
         except mysql.connector.Error as e:
             if handle_except:
                 print(f"Database query error: {e}")
@@ -79,10 +79,6 @@ class SQLManager:
                 raise
         finally:
             cursor.close()
-
-            # Close the connection (if not externally provided)
-            if not connection:
-                connection.close()
 
 
     def close_pool(self):
