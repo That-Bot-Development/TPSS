@@ -14,5 +14,8 @@ class BaseModule(commands.Cog):
 
     async def get_member(self, user_id) -> discord.Member: # TODO: Should this even be here?
         server:discord.Guild = self.d_consts.SERVER
-        return server.get_member(user_id) or await server.fetch_member(user_id)
+        try:
+            return server.get_member(user_id) or await server.fetch_member(user_id)
+        except Exception:
+            return None
 

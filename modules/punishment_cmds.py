@@ -13,39 +13,63 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
     def __init__(self, client):
         self.client = client
 
-    # TODO: Check on incorrect dates in DB, see pinned
-    @app_commands.command(name="mute", description="Mutes the specified user.")
-    @app_commands.describe(user="The user to be muted.",duration="The length of the punishment. (m = Minutes, h = Hours, d = Days, w = Weeks, M = Months)", reason="The reason for the punishment.")
-    async def mute(self, interactions: discord.Interaction, user:discord.User, duration:str, reason:str):
-        pun_type = "mute"
+    @app_commands.command(name="warn", description="Warns the specified user.")
+    @app_commands.describe(user="The user to be warned.", reason="The reason for the punishment.")
+    async def warn(self, interactions: discord.Interaction, user:discord.User, reason:str):
+        pun_type = "warn"
 
         member = await self.get_member(user.id)
 
-        # Issue a Discord Timeout on this user
         try:
-            time = await self.duration_str_to_time(duration)
-
-            await member.timeout(time,reason=reason)
-
+            # Commit to database
             id = None
             id = await self.commit_punishment(
                 user_id=member.id,
                 punishment_type=pun_type,
                 reason=reason,
-                issued_by_id=interactions.user.id
-                ,expires=member.timed_out_until.strftime('%Y-%m-%d %H:%M:%S')
-            
+                issued_by_id=interactions.user.id,
+                expires=None
             )
         except Exception as e:
             await self.create_punishment_err(interactions,pun_type,e)
-            await member.timeout(0,reason="Internal Error. Cancelling.") # Cancel the punishment
             return
 
+        await self.respond_and_log_punishment(interactions,(pun_type,id),member,None,reason)
+    
+    
+    # TODO: Check on incorrect dates in DB, see pinned
+    @app_commands.command(name="mute", description="Mutes the specified user.")
+    @app_commands.describe(user="The user to be muted.",duration="The length of the punishment. (m = Minutes, h = Hours, d = Days, w = Weeks)", reason="The reason for the punishment.")
+    async def mute(self, interactions: discord.Interaction, user:discord.User, duration:str, reason:str):
+        pun_type = "mute"
 
-        await self.create_punishment_success_msg(interactions,(pun_type,id),member,member.timed_out_until,reason)
-        # TODO: Link to Logging System
+        member = await self.get_member(user.id)
 
-    # TODO: Why is this not loading now??
+        try:
+            time = await self.duration_str_to_time(duration)
+
+            if time > timedelta(days=28) or time < timedelta(0):
+                raise DurationOutOfBoundsError("Mute duration cannot exceed 28 days or be negative.")
+
+            # Issue a Discord Timeout on this user
+            await member.timeout(time,reason=reason)
+
+            # Commit to database
+            id = None
+            id = await self.commit_punishment(
+                user_id=member.id,
+                punishment_type=pun_type,
+                reason=reason,
+                issued_by_id=interactions.user.id,
+                expires=member.timed_out_until.strftime('%Y-%m-%d %H:%M:%S')
+            )
+        except Exception as e:
+            await self.create_punishment_err(interactions,pun_type,e)
+            await member.timeout(timedelta(0),reason="Internal Error. Cancelling.") # Cancel the punishment
+            return
+
+        await self.respond_and_log_punishment(interactions,(pun_type,id),member,member.timed_out_until,reason)
+
     @app_commands.command(name="punishments", description="Lists all punishment cases for the specified user.")
     @app_commands.describe(user="The user to check punishments on.")
     async def punishments(self, interactions: discord.Interaction, user:discord.User=None):
@@ -78,7 +102,7 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
 
     @app_commands.command(name="case", description="View a specific punishment case.")
     @app_commands.describe(case="The case number.")
-    async def punishments(self, interactions: discord.Interaction, case:int):        
+    async def case(self, interactions: discord.Interaction, case:int):        
         message = title = ""
         member = None
 
@@ -88,23 +112,31 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
             results = self.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = %s",(case,),connection=connection,handle_except=False)
 
             if results:
-                # Get Member #TODO: Is there a better & less verbose way of doing this & subheader
-                try:
-                    member = await self.get_member(results[0]['UserID'])
-                except Exception as e:
-                    pass
-                
                 # Sub-header
+                member = await self.get_member(results[0]['UserID'])
                 if member is not None:
-                    message = f"**{member.name}** ({member.id}) \- {results[0]['Type']}\n\n"
+                    subheader = f"**{member.name}** ({member.id})"
                 else:
-                    message = f"**Unknown** ({results[0]['UserID']}) \- {results[0]['Type']}\n\n"
+                    subheader = f"**Unknown** ({results[0]['UserID']})"
+                subheader += f" - {results[0]['Type']}"
 
-                issued_by =  await self.get_member(results[0]['IssuedByID']) # TODO: Temporary, needs to be moved to the issuedby verification
+                # Expiry
+                expires_on = results[0]['ExpiresAt']
+                if expires_on is not None:
+                    expiry = f"{datetime.strptime(str(results[0]['ExpiresAt']),"%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y")}"
+                else:
+                    expiry = "Never"
 
-                # Body  TODO: (define once expired logic in)
-                message += f"**Reason**: {results[0]['Reason']}\n**Expires**: Never\n\n-# Issued {datetime.strptime(str(results[0]['IssuedAt']),"%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y")} by {issued_by.name}"
-                # TODO: Expired logic TODO: IssuedBy validity verification TODO: Fix formatting idk wtf
+                # Details on issuance of punishment
+                issued_by =  await self.get_member(results[0]['IssuedByID'])
+                issued_details = f"-# Issued {datetime.strptime(str(results[0]['IssuedAt']),"%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y")} by "
+                if issued_by is not None:
+                    issued_details += issued_by.name
+                else:
+                    issued_details += f"Unknown ({results[0]['IssuedByID']})"
+
+                # Final message
+                message = f"{subheader}\n**Reason**: {results[0]['Reason']}\n**Expires**: {expiry}\n{issued_details}"
                 title = f"Case #{results[0]['CaseNo']}"
             else:
                 message = "*Case not found.*" # TODO: Make an error?
@@ -121,7 +153,7 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
             traceback.print_exc()
             return
 
-    # TODO: Move to some sort of utilities function? Probably also true for the function Ijust moved to base
+    # TODO: Move to some sort of utilities class? Probably also true for the function I just moved to base
     def truncate_string(self, text, max_length=16):
         """Truncates a string and adds ellipsis if it exceeds max_length."""
         if len(text) > max_length:
@@ -153,7 +185,9 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
         if isinstance(e, sql_error):
             message = "Unable to reach the database.\n\nIf the issue persists, contact an admin."
         elif isinstance(e,DurationParseError):
-            message = "The duration could not be parsed.\nPlease ensure you follow the provided format:\n> m = Minutes, h = Hours, d = Days, w = Weeks, M = Months\n*ex.* **2d 5h**"
+            message = "The duration could not be parsed.\nPlease ensure you follow the proper format:\n> m = Minutes, h = Hours, d = Days, w = Weeks, M = Months, y = Years\n*ex.* **2d 5h**"
+        elif isinstance(e,DurationOutOfBoundsError):
+            message = str(e)
         else:
             message = "This action could not be completed.\nPlease ensure you have the required permissions.\n\nIf the issue persists, contact an admin."
 
@@ -164,28 +198,38 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
             error=True
         ).create(),ephemeral=True,delete_after=20)
 
-    async def create_punishment_success_msg(self, interactions:discord.Interaction, punishment_info:tuple, member:discord.Member, expiry:datetime, reason:str):
+    async def respond_and_log_punishment(self, interactions:discord.Interaction, punishment_info:tuple, member:discord.Member, expiry:datetime, reason:str):
         punishment_type = punishment_info[0].capitalize()
         punishment_id = punishment_info[1]
         
-        expiry_f:str = expiry.strftime("%d/%m/%Y @ %H:%M:%S")
+        cmd_response_message = f"**Case #{punishment_id}**: {punishment_type} applied to **{member.display_name}** with reason '*{reason}*'."
+        
+        if expiry is not None:
+            try:
+                expiry_f:str = expiry.strftime("%d/%m/%Y @ %H:%M:%S")
+                cmd_response_message += f"\n\nThis punishment will expire on `{expiry_f}`"
+            except Exception:
+                pass
+
         await interactions.response.send_message(embed=EmbedMaker(
             embed_type=EmbedType.USER_MANAGEMENT,
             title=f"<:check:1346601762882326700> {punishment_type} Applied",
-            message=f"**Case #{punishment_id}**: {punishment_type} applied to **{member.display_name}** with reason '*{reason}*'.\n\nThis punishment will expire on `{expiry_f}`"
+            message=cmd_response_message
         ).create())
+
+        # TODO: Link to Logging System
+        # TODO: Send message to targeted user
+
     
     async def duration_str_to_time(self, duration:str) -> timedelta:
         m = h = d = w = 0
         curNum = ""
 
         for char in duration:
-            print(char)
             try:
                 match(char):
                     case _ if char.isnumeric():
                         curNum += char
-                        print("Numeric")
 
                     case 'm':
                         m += int(curNum)
@@ -198,8 +242,9 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
                         w += int(curNum)
                     case 'M':
                         # Timedelta does not support Months, this must be converted manually
-                        # TODO: Doesn't work
                         w += int(curNum)*4
+                    case 'y':
+                        w += int(curNum)*52
                     case ' ':
                         pass
                     case _:
@@ -221,4 +266,8 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
 
 class DurationParseError(Exception):
     """Thrown when punishment duration cannot be parsed from user input."""
+    pass
+
+class DurationOutOfBoundsError(Exception):
+    """Thrown when the specified duration is out of bounds for the given context."""
     pass
