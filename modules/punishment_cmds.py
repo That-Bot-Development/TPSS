@@ -45,6 +45,7 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
         await self.create_punishment_success_msg(interactions,(pun_type,id),member,member.timed_out_until,reason)
         # TODO: Link to Logging System
 
+    # TODO: Why is this not loading now??
     @app_commands.command(name="punishments", description="Lists all punishment cases for the specified user.")
     @app_commands.describe(user="The user to check punishments on.")
     async def punishments(self, interactions: discord.Interaction, user:discord.User=None):
@@ -95,18 +96,15 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
                 
                 # Sub-header
                 if member is not None:
-                    message = f"## **{member.name}** ({member.id}) \- {results[0]['Type']}\n"
+                    message = f"**{member.name}** ({member.id}) \- {results[0]['Type']}\n\n"
                 else:
-                    message = f"Unknown ({results[0]['UserID']})\n \- {results[0]['Type']}\n"
+                    message = f"**Unknown** ({results[0]['UserID']}) \- {results[0]['Type']}\n\n"
 
                 issued_by =  await self.get_member(results[0]['IssuedByID']) # TODO: Temporary, needs to be moved to the issuedby verification
 
                 # Body  TODO: (define once expired logic in)
-                message += f"""
-                    **Reason**: {results[0]['Reason']}
-                    **Expires**: Never
-                    -# Issued {datetime.strptime(str(results[0]['IssuedAt']),"%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y")} by {issued_by.name}
-                """ # TODO: Expired logic TODO: IssuedBy validity verification TODO: Fix formatting idk wtf
+                message += f"**Reason**: {results[0]['Reason']}\n**Expires**: Never\n\n-# Issued {datetime.strptime(str(results[0]['IssuedAt']),"%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y")} by {issued_by.name}"
+                # TODO: Expired logic TODO: IssuedBy validity verification TODO: Fix formatting idk wtf
                 title = f"Case #{results[0]['CaseNo']}"
             else:
                 message = "*Case not found.*" # TODO: Make an error?
