@@ -56,7 +56,7 @@ async def init_cogs():
         await client.add_cog(f.Say(client))
         await client.add_cog(f.Cat(client))
     else:
-        # Debug Modules
+        # Debug Modules / Cogs
         await client.add_cog(pc.PunishmentCommands(client))
         await client.add_cog(u.SQLQuery(client))
 

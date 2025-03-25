@@ -1,5 +1,4 @@
 import mysql.connector
-from mysql.connector import pooling
 
 import json
 
@@ -47,7 +46,11 @@ class SQLManager:
     def execute_query(self, query: str, params=None, insert_return_query=None, handle_except=True, connection=None):
         # Create a new connection if not provided
         if not connection:
+            using_internal_conn = True
             connection = self.get_connection()
+        else:
+            using_internal_conn = False
+
 
         cursor = connection.cursor(dictionary=True)
         result = None  # Default result
@@ -59,7 +62,7 @@ class SQLManager:
             if query.strip().lower().startswith("insert"):
                 connection.commit()  # Commit changes for insert/update/delete
                 if insert_return_query:
-                    last_inserted_id_query = insert_return_query #"SELECT * FROM Punishments WHERE CaseNo = LAST_INSERT_ID()"
+                    last_inserted_id_query = insert_return_query # i.e. "SELECT * FROM Punishments WHERE CaseNo = LAST_INSERT_ID()"
                     cursor.execute(last_inserted_id_query)
                     result = cursor.fetchall()
 
@@ -79,7 +82,8 @@ class SQLManager:
                 raise
         finally:
             cursor.close()
-
+            if using_internal_conn:
+                connection.close()
 
     def close_pool(self):
         # Close the connection pool

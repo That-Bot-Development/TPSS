@@ -39,7 +39,7 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
     
     # TODO: Check on incorrect dates in DB, see pinned
     @app_commands.command(name="mute", description="Mutes the specified user.")
-    @app_commands.describe(user="The user to be muted.",duration="The length of the punishment. (m = Minutes, h = Hours, d = Days, w = Weeks)", reason="The reason for the punishment.")
+    @app_commands.describe(user="The user to be muted.", duration="The length of the punishment. (m = Minutes, h = Hours, d = Days, w = Weeks)", reason="The reason for the punishment.")
     async def mute(self, interactions: discord.Interaction, user:discord.User, duration:str, reason:str):
         pun_type = "mute"
 
@@ -70,6 +70,65 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
 
         await self.respond_and_log_punishment(interactions,(pun_type,id),member,member.timed_out_until,reason)
 
+    @app_commands.command(name="kick", description="Kicks the specified user.")
+    @app_commands.describe(user="The user to be kicked.", reason="The reason for the punishment.")
+    async def kick(self, interactions: discord.Interaction, user:discord.User, reason:str):
+        pun_type = "kick"
+
+        member = await self.get_member(user.id)
+
+        try:
+            # DM must be sent before kicking the user from the server
+            await self.send_punishment_dm(member,pun_type,None,reason)
+
+            # Issue a Discord Kick on this user
+            await member.kick(reason=reason)
+
+            # Commit to database
+            id = None
+            id = await self.commit_punishment(
+                user_id=member.id,
+                punishment_type=pun_type,
+                reason=reason,
+                issued_by_id=interactions.user.id,
+                expires=None
+            )
+        except Exception as e:
+            await self.create_punishment_err(interactions,pun_type,e)
+            return
+
+        await self.respond_and_log_punishment(interactions,(pun_type,id),member,None,reason,handle_dm=False)
+
+    @app_commands.command(name="ban", description="Bans the specified user.")
+    @app_commands.describe(user="The user to be banned.", reason="The reason for the punishment.")
+    async def kick(self, interactions: discord.Interaction, user:discord.User, reason:str):
+        pun_type = "ban"
+
+        member = await self.get_member(user.id)
+
+        try:
+            # DM must be sent before banning the user from the server
+            #TODO: Replace with specific ban DM prolly
+            await self.send_punishment_dm(member,pun_type,None,reason)
+
+            # Issue a Discord Ban on this user
+            await member.ban(reason=reason)
+
+            # Commit to database
+            id = None
+            id = await self.commit_punishment(
+                user_id=member.id,
+                punishment_type=pun_type,
+                reason=reason,
+                issued_by_id=interactions.user.id,
+                expires=None
+            )
+        except Exception as e:
+            await self.create_punishment_err(interactions,pun_type,e)
+            return
+
+        await self.respond_and_log_punishment(interactions,(pun_type,id),member,None,reason,handle_dm=False)
+
     @app_commands.command(name="punishments", description="Lists all punishment cases for the specified user.")
     @app_commands.describe(user="The user to check punishments on.")
     async def punishments(self, interactions: discord.Interaction, user:discord.User=None):
@@ -81,15 +140,15 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
         message = ""
 
         try:
-            connection = self.sql.get_connection()
+            with self.sql.get_connection() as connection:
+                #TODO: Re-evaluate if I need to be creating an independent connection when I am only executing one query in the function
+                results = self.sql.execute_query("SELECT * FROM Punishments WHERE UserID = %s",(member.id,),connection=connection,handle_except=False)
 
-            results = self.sql.execute_query("SELECT * FROM Punishments WHERE UserID = %s",(member.id,),connection=connection,handle_except=False)
-
-            if results:
-                for row in results:
-                    message += f"**Case #{row['CaseNo']}** - {row['Type']}\n{row['Reason']}\n-# {datetime.strptime(str(row['IssuedAt']),"%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y")}\n\n"
-            else:
-                message = "*No cases found.*"
+                if results:
+                    for row in results:
+                        message += f"**Case #{row['CaseNo']}** - {row['Type']}\n{row['Reason']}\n-# {datetime.strptime(str(row['IssuedAt']),"%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y")}\n\n"
+                else:
+                    message = "*No cases found.*"
         except Exception as e:
             await self.create_punishment_err(interactions,"list punishments",e)
             return
@@ -107,9 +166,8 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
         member = None
 
         try:
-            connection = self.sql.get_connection()
-
-            results = self.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = %s",(case,),connection=connection,handle_except=False)
+            with self.sql.get_connection() as connection:
+                results = self.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = %s",(case,),connection=connection,handle_except=False)
 
             if results:
                 # Sub-header
@@ -164,16 +222,15 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
     # PUNISHMENT COMMAND INTERNAL FUNCTIONS
 
     async def commit_punishment(self, user_id:int, punishment_type:str, reason:str, issued_by_id:int, expires:datetime=None):
-        connection = self.sql.get_connection()
-        
         try:
-            self.sql.execute_query("""
-                INSERT INTO Punishments (UserID, Type, Reason, IssuedByID, ExpiresAt) 
-                VALUES (%s,%s,%s,%s,%s)
-            """,(user_id,punishment_type,reason,issued_by_id,expires),connection=connection,handle_except=False)
+            with self.sql.get_connection() as connection:
+                self.sql.execute_query("""
+                    INSERT INTO Punishments (UserID, Type, Reason, IssuedByID, ExpiresAt) 
+                    VALUES (%s,%s,%s,%s,%s)
+                """,(user_id,punishment_type,reason,issued_by_id,expires),connection=connection,handle_except=False)
 
-            result = self.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = LAST_INSERT_ID()",connection=connection)
-        except sql_error as e:
+                result = self.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = LAST_INSERT_ID()",connection=connection,handle_except=False)
+        except sql_error:
             raise
 
         id = result[0]['CaseNo'] if result else "?"
@@ -181,7 +238,6 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
         return id
 
     async def create_punishment_err(self, interactions:discord.Interaction, action:str, e:Exception):
-        is_query_error = isinstance(e, sql_error)
         if isinstance(e, sql_error):
             message = "Unable to reach the database.\n\nIf the issue persists, contact an admin."
         elif isinstance(e,DurationParseError):
@@ -197,13 +253,13 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
             message=message,
             error=True
         ).create(),ephemeral=True,delete_after=20)
+        
+    async def respond_and_log_punishment(self, interactions:discord.Interaction, punishment_info:tuple, member:discord.Member, expiry:datetime, reason:str, handle_dm=True):
+        punishment_type:str = punishment_info[0].lower()
+        punishment_id:str = punishment_info[1]
+        
+        cmd_response_message = f"**Case #{punishment_id}**: **{member.display_name}** has been {self.past_tense(punishment_type)} with reason '*{reason}*'."
 
-    async def respond_and_log_punishment(self, interactions:discord.Interaction, punishment_info:tuple, member:discord.Member, expiry:datetime, reason:str):
-        punishment_type = punishment_info[0].capitalize()
-        punishment_id = punishment_info[1]
-        
-        cmd_response_message = f"**Case #{punishment_id}**: {punishment_type} applied to **{member.display_name}** with reason '*{reason}*'."
-        
         if expiry is not None:
             try:
                 expiry_f:str = expiry.strftime("%d/%m/%Y @ %H:%M:%S")
@@ -213,13 +269,30 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
 
         await interactions.response.send_message(embed=EmbedMaker(
             embed_type=EmbedType.USER_MANAGEMENT,
-            title=f"<:check:1346601762882326700> {punishment_type} Applied",
+            title=f"<:check:1346601762882326700> {punishment_type.capitalize()} Applied",
             message=cmd_response_message
         ).create())
 
         # TODO: Link to Logging System
-        # TODO: Send message to targeted user
 
+        if handle_dm:
+            await self.send_punishment_dm(member,punishment_type,expiry,reason)
+
+    async def send_punishment_dm(self, member:discord.Member, punishment_type:str, expiry:datetime, reason:str):
+        try:
+            user_dm_message = f"**Reason**: {reason}"
+
+            if expiry is not None:
+                expiry_f:str = expiry.strftime("%d/%m/%Y @ %H:%M:%S")
+                user_dm_message += f"\nYour punishment will expire on `{expiry_f}`"
+
+            await member.send(embed=EmbedMaker(
+                embed_type=EmbedType.USER_MANAGEMENT,
+                title=f"<:alert:1346654360012329044> You have been {self.past_tense(punishment_type)}.",
+                message=user_dm_message
+            ).create())
+        except Exception:
+            pass
     
     async def duration_str_to_time(self, duration:str) -> timedelta:
         m = h = d = w = 0
@@ -263,6 +336,15 @@ class PunishmentCommands(BaseModule): # TODO: Split (yes)
             minutes=m,
             seconds=0
         )
+    
+    # Returns the past tense version of the very provided (only for the purpose of punishment types)
+    def past_tense(self, verb):
+        if verb.endswith("e"):
+            return verb + "d"
+        if verb.endswith("n"):
+            return verb + "ned"
+        else:
+            return verb + "ed"
 
 class DurationParseError(Exception):
     """Thrown when punishment duration cannot be parsed from user input."""
