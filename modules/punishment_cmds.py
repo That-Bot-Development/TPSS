@@ -36,8 +36,8 @@ class PunishmentCommands(PunishmentSystem):
     
     # TODO: Check on incorrect dates in DB, see pinned
     @app_commands.command(name="mute", description="Mutes the specified user.")
-    @app_commands.describe(user="The user to be muted.", duration="The length of the punishment. (m = Minutes, h = Hours, d = Days, w = Weeks)", reason="The reason for the punishment.")
-    async def mute(self, interactions: discord.Interaction, user:discord.User, duration:str, reason:str):
+    @app_commands.describe(user="The user to be muted.", reason="The reason for the punishment.", duration="The length of the punishment. (m = Minutes, h = Hours, d = Days, w = Weeks)")
+    async def mute(self, interactions: discord.Interaction, user:discord.User, reason:str, duration:str):
         pun_type = "mute"
 
         member = await self.get_member(user.id)
@@ -62,7 +62,6 @@ class PunishmentCommands(PunishmentSystem):
             )
         except Exception as e:
             await self.create_punishment_err(interactions,pun_type,e)
-            await member.timeout(timedelta(0),reason="Internal Error. Cancelling.") # Cancel the punishment
             return
 
         await self.respond_and_log_punishment(interactions,(pun_type,id),member,member.timed_out_until,reason)
@@ -97,13 +96,23 @@ class PunishmentCommands(PunishmentSystem):
         await self.respond_and_log_punishment(interactions,(pun_type,id),member,None,reason,handle_dm=False)
 
     @app_commands.command(name="ban", description="Bans the specified user.")
-    @app_commands.describe(user="The user to be banned.", reason="The reason for the punishment.")
-    async def kick(self, interactions: discord.Interaction, user:discord.User, reason:str):
+    @app_commands.describe(user="The user to be banned.", reason="The reason for the punishment.", duration="(optional) The length of the punishment. (m = Minutes, h = Hours, d = Days, w = Weeks, M = Months, y = Years)")
+    async def kick(self, interactions: discord.Interaction, user:discord.User, reason:str, duration:str=None):
         pun_type = "ban"
+        expiry = None
 
         member = await self.get_member(user.id)
 
         try:
+            if duration is not None:
+                pun_type = "temp-ban"
+
+                time = await self.duration_str_to_time(duration)
+
+                expiry = datetime.now() + time
+                expiry = expiry.strftime('%Y-%m-%d %H:%M:%S')
+
+
             # DM must be sent before banning the user from the server
             await self.send_punishment_dm(member,pun_type,None,reason,footer_message="If you feel as if your punishment should be removed, please fill out [this](https://forms.gle/ewMRCRny6RQMZxna9) form. Please be reasonable when submitting your appeal.")
 
@@ -117,7 +126,7 @@ class PunishmentCommands(PunishmentSystem):
                 punishment_type=pun_type,
                 reason=reason,
                 issued_by_id=interactions.user.id,
-                expires=None
+                expires=expiry
             )
         except Exception as e:
             await self.create_punishment_err(interactions,pun_type,e)

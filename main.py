@@ -20,7 +20,7 @@ import modules.punishment_case_cmds as pcc
 import modules.fun as f
 import modules.utilities as u
 
-debug = False
+debug = True
 
 # Set up bot
 GUID = discord.Object(id=578356230637223936)
@@ -46,7 +46,7 @@ async def init_cogs():
     # Instantiate utilities & initialize reference vars
     await client.add_cog(d_consts.DiscordConstants(client))
 
-    base.BaseModule.d_consts = d_consts.DiscordConstants.get()     #TODO: Sometimes d_consts loads late
+    base.BaseModule.d_consts = d_consts.DiscordConstants.get() #TODO: Sometimes d_consts loads late
     base.BaseModule.sql = sql.SQLManager()
 
     # Initialize cogs TODO: Rework this at some point
