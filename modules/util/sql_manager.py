@@ -2,6 +2,7 @@ import mysql.connector
 
 import json
 
+#TODO: Have a way to disable SQL functionality TODO: Exception handling & disabling of functionality if connection cannot be established with given credentials
 class SQLManager:
     _instance = None
 
@@ -45,45 +46,39 @@ class SQLManager:
 
     def execute_query(self, query: str, params=None, insert_return_query=None, handle_except=True, connection=None):
         # Create a new connection if not provided
-        if not connection:
-            using_internal_conn = True
-            connection = self.get_connection()
-        else:
-            using_internal_conn = False
+        connection = connection or self.get_connection()
 
+        with connection:
+            cursor = connection.cursor(dictionary=True)
+            result = None  # Default result
+            
+            try:
+                cursor.execute(query, params or ())
 
-        cursor = connection.cursor(dictionary=True)
-        result = None  # Default result
-        
-        try:
-            cursor.execute(query, params or ())
+                # For INSERT queries, commit the changes 
+                if query.strip().lower().startswith("insert"):
+                    connection.commit()  # Commit changes for insert/update/delete
+                    if insert_return_query:
+                        # i.e. "SELECT * FROM Punishments WHERE CaseNo = LAST_INSERT_ID()"
+                        cursor.execute(insert_return_query)
+                        result = cursor.fetchall()
 
-            # If it's an INSERT query, fetch the last inserted ID
-            if query.strip().lower().startswith("insert"):
-                connection.commit()  # Commit changes for insert/update/delete
-                if insert_return_query:
-                    last_inserted_id_query = insert_return_query # i.e. "SELECT * FROM Punishments WHERE CaseNo = LAST_INSERT_ID()"
-                    cursor.execute(last_inserted_id_query)
+                # For SELECT queries, fetch the results
+                elif query.strip().lower().startswith("select"):
                     result = cursor.fetchall()
 
-            # For SELECT queries, fetch the results
-            elif query.strip().lower().startswith("select"):
-                result = cursor.fetchall()
+                # For other queries (UPDATE, DELETE), commit the changes
+                else:
+                    connection.commit()
 
-            # For other queries (UPDATE, DELETE), commit the changes
-            else:
-                connection.commit()
-
-            return result
-        except mysql.connector.Error as e:
-            if handle_except:
-                print(f"Database query error: {e}")
-            else:
-                raise
-        finally:
-            cursor.close()
-            if using_internal_conn:
-                connection.close()
+                return result
+            except mysql.connector.Error as e:
+                if handle_except:
+                    print(f"Database query error: {e}")
+                else:
+                    raise
+            finally:
+                cursor.close()
 
     def close_pool(self):
         # Close the connection pool

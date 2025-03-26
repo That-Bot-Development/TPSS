@@ -14,7 +14,9 @@ import modules.mod_mail as mm
 import modules.ban_dm as bd
 import modules.suggestion_manager as sm
 import modules.art_manager as am
+import modules.punishment_system as ps
 import modules.punishment_cmds as pc
+import modules.punishment_case_cmds as pcc
 import modules.fun as f
 import modules.utilities as u
 
@@ -47,7 +49,7 @@ async def init_cogs():
     base.BaseModule.d_consts = d_consts.DiscordConstants.get()     #TODO: Sometimes d_consts loads late
     base.BaseModule.sql = sql.SQLManager()
 
-    # Initialize cogs
+    # Initialize cogs TODO: Rework this at some point
     if not debug:
         await client.add_cog(mm.ModMail(client))
         await client.add_cog(bd.BanDM(client))
@@ -57,7 +59,9 @@ async def init_cogs():
         await client.add_cog(f.Cat(client))
     else:
         # Debug Modules / Cogs
+        await client.add_cog(ps.PunishmentSystem(client))
         await client.add_cog(pc.PunishmentCommands(client))
+        await client.add_cog(pcc.PunishmentCaseCommands(client))
         await client.add_cog(u.SQLQuery(client))
 
 
