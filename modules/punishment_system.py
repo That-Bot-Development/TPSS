@@ -1,5 +1,5 @@
 import discord
-from discord.ext import tasks
+from discord.ext import tasks, commands
 
 from modules.base import BaseModule
 from modules.util.embed_maker import *
@@ -99,7 +99,6 @@ class PunishmentSystem(BaseModule):
 
                     case 'm':
                         m += int(curNum)
-                        print("Minute")
                     case _ if char.lower() == 'h':
                         h += int(curNum)
                     case _ if char.lower() == 'd':
@@ -139,59 +138,55 @@ class PunishmentSystem(BaseModule):
         else:
             return verb + "ed"
         
-# TODO: Register as cog once done
 class ExpiredPunishmentManager(PunishmentSystem):
     '''Manages expired punishments'''
 
-    def __init__(self):
-        self.unban_expired_tempbans.start()
-        self.remove_expired_punishments.start()
+    @commands.Cog.listener()
+    async def on_ready(self):
+        if not self.unban_expired_tempbans.is_running():
+            self.unban_expired_tempbans.start()
+        #if not self.remove_expired_punishments.is_running():
+         #   self.remove_expired_punishments.start()
 
-    @tasks.loop(hours=1)
+    @tasks.loop(minutes=1)
     async def unban_expired_tempbans(self):
         '''Removes all expires tempbans'''
-        while True:
-            cur_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cur_datetime = datetime.now()
 
-            results = self.sql.execute_query(
-                "SELECT * FROM Punishments WHERE Type = 'temp-ban' AND ExpiresAt < %s AND ExpiresAt > %s",
-                (cur_datetime,cur_datetime - timedelta(weeks=1)),
-            )
+        results = self.sql.execute_query(
+            "SELECT * FROM Punishments WHERE Type = 'temp-ban' AND ExpiresAt < %s AND ExpiresAt > %s",
+            (cur_datetime,cur_datetime - timedelta(weeks=1))
+        )
 
+        if results:
             for row in results:
                 try:
-                    member:discord.Member = self.get_member(row['UserID'])
-
-                    member.unban("Automatic Unban - Ban Expired")
-
-                    #TODO: Log!
+                    server:discord.Guild = self.d_consts.SERVER
+                    user:discord.User = await self.client.fetch_user(row['UserID'])
+                    await server.unban(user)
                 except Exception:
-                    #TODO: Handle!
-                    pass
+                   pass
 
-    @tasks.loop(hours=1)
+    @tasks.loop(minutes=1) #TODO: Finish ts!
     async def remove_expired_punishments(self):
-        while True:
-            cur_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cur_datetime = datetime.now()
 
-            with self.sql.get_connection() as connection:
-                results = self.sql.execute_query(
-                    "SELECT * FROM Punishments WHERE Type != 'temp-ban' OR Type != 'ban' AND ExpiresAt < %s",
-                    (cur_datetime,cur_datetime - timedelta(weeks=8)),
-                    connection=connection
-                )
+        with self.sql.get_connection() as connection:
+            results = self.sql.execute_query(
+                "SELECT * FROM Punishments WHERE Type != 'temp-ban' OR Type != 'ban' AND ExpiresAt < %s",
+                (cur_datetime,cur_datetime - timedelta(weeks=8)),
+                connection=connection
+            )
 
+            if results:
                 for row in results:
                     try:
                         # TODO: Delete
                         pass
                         # TODO: Log!
                     except Exception:
-                        pass
-
-            await asyncio.sleep(3600)
-                
-        
+                        pass                
+            
 class DurationParseError(Exception):
     """Thrown when punishment duration cannot be parsed from user input."""
     pass

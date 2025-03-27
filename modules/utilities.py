@@ -67,20 +67,26 @@ class SQLQuery(BaseModule):
             def update_buttons(self):
                 self.children[0].disabled = (self.current_page == 0)
                 self.children[1].disabled = (self.current_page == 0)
-                self.children[2].disabled = (self.current_page == len(self.pages) - 1)
+                self.children[2].disabled = (self.current_page == int(len(self.pages)/2))
                 self.children[3].disabled = (self.current_page == len(self.pages) - 1)
+                self.children[4].disabled = (self.current_page == len(self.pages) - 1)
 
             @discord.ui.button(label="⏪", style=discord.ButtonStyle.grey)
             async def first(self, interaction: discord.Interaction, button: Button):
                 self.current_page = 0
                 await self.update_message(interaction)
 
-            @discord.ui.button(label="⬅️", style=discord.ButtonStyle.grey)
+            @discord.ui.button(label="◀️", style=discord.ButtonStyle.grey)
             async def previous(self, interaction: discord.Interaction, button: Button):
                 self.current_page -= 1
                 await self.update_message(interaction)
 
-            @discord.ui.button(label="➡️", style=discord.ButtonStyle.grey)
+            @discord.ui.button(label="⏺️", style=discord.ButtonStyle.grey)
+            async def middle(self, interaction: discord.Interaction, button: Button):
+                self.current_page = int(len(self.pages)/2)
+                await self.update_message(interaction)
+
+            @discord.ui.button(label="▶️", style=discord.ButtonStyle.grey)
             async def next(self, interaction: discord.Interaction, button: Button):
                 self.current_page += 1
                 await self.update_message(interaction)
@@ -90,7 +96,8 @@ class SQLQuery(BaseModule):
                 self.current_page = len(self.pages) - 1
                 await self.update_message(interaction)
 
-        view = PaginationView(pages)
+        
+        view = PaginationView(pages) if len(pages) > 1 else discord.utils.MISSING
         await interaction.followup.send(embed=EmbedMaker(
             embed_type=EmbedType.MISC,
             title=f"Query Result (Page 1/{len(pages)})",

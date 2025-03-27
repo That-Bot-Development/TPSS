@@ -6,11 +6,15 @@ from modules.util.sql_manager import SQLManager
 
 class BaseModule(commands.Cog):
     # "Global" items that all modules should be able to access
+    client:discord.Client = None
     bot_started = False
     version = "2.7.0" # Move to config, add getter
-
     d_consts = None
     sql:SQLManager = None
+
+
+    def __init__(self, client):
+        self.client = client
 
     async def get_member(self, user_id) -> discord.Member: # TODO: Should this even be here?
         server:discord.Guild = self.d_consts.SERVER

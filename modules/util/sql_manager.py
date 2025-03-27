@@ -45,40 +45,45 @@ class SQLManager:
         return self.pool.get_connection()
 
     def execute_query(self, query: str, params=None, insert_return_query=None, handle_except=True, connection=None):
+        # Determine if we should manage the connection
+        manage_connection = connection is None
+
         # Create a new connection if not provided
         connection = connection or self.get_connection()
 
-        with connection:
-            cursor = connection.cursor(dictionary=True)
-            result = None  # Default result
-            
-            try:
-                cursor.execute(query, params or ())
+        if manage_connection:
+            with connection:  # Use 'with' only when we create the connection
+                return self._execute_query_logic(connection, query, params, insert_return_query, handle_except)
+        else:
+            return self._execute_query_logic(connection, query, params, insert_return_query, handle_except)
 
-                # For INSERT queries, commit the changes 
-                if query.strip().lower().startswith("insert"):
-                    connection.commit()  # Commit changes for insert/update/delete
-                    if insert_return_query:
-                        # i.e. "SELECT * FROM Punishments WHERE CaseNo = LAST_INSERT_ID()"
-                        cursor.execute(insert_return_query)
-                        result = cursor.fetchall()
+    def _execute_query_logic(self, connection, query, params, insert_return_query, handle_except):
+        cursor = connection.cursor(dictionary=True)
+        result = None  # Default result
 
-                # For SELECT queries, fetch the results
-                elif query.strip().lower().startswith("select"):
+        try:
+            cursor.execute(query, params or ())
+
+            if query.strip().lower().startswith("insert"):
+                connection.commit()
+                if insert_return_query:
+                    cursor.execute(insert_return_query)
                     result = cursor.fetchall()
 
-                # For other queries (UPDATE, DELETE), commit the changes
-                else:
-                    connection.commit()
+            elif query.strip().lower().startswith("select"):
+                result = cursor.fetchall()
 
-                return result
-            except mysql.connector.Error as e:
-                if handle_except:
-                    print(f"Database query error: {e}")
-                else:
-                    raise
-            finally:
-                cursor.close()
+            else:
+                connection.commit()
+
+            return result
+        except mysql.connector.Error as e:
+            if handle_except:
+                print(f"Database query error: {e}")
+            else:
+                raise
+        finally:
+            cursor.close()
 
     def close_pool(self):
         # Close the connection pool
