@@ -25,7 +25,7 @@ Your `private/token.txt` file should simply include your bots token as seen belo
 
 `YOUR_DISCORD_BOT_TOKEN`
 
-## 2. Setting Up SQL Configuration
+## 2. Setting Up SQL Connection Config
 Next, you'll need to configure the bot to connect to your SQL database. The bot will require details like your database host, username, password, and database name.
 
 ### Create a `sql_configuration.json` File
@@ -45,7 +45,9 @@ In the same `private` directory, create a new file called `sql_configuration.jso
 ```
 3. Fill in each field with the correct credentials & information.
 
-For information on the SQL schemas used by That Bot, see [TBD].
-
 **If you do not wish to use SQL, do not include a `sql_configuration.json` file. This will disable all SQL functionality within the bot.**
 - Systems that access the database will still function, but data cannot be stored or retrived.
+
+## 3. Setting Up Database Schema
+
+For information on the SQL schemas used by That Bot, see [TBD].
