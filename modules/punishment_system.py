@@ -44,6 +44,7 @@ class PunishmentSystem(BaseModule):
             error=True
         ).create(),ephemeral=True,delete_after=20)
         
+    #TODO: Consider restructuring parameters for this & pun dm, consider splitting up given it isnt always done at the same time anyways (handle_dm boolean)
     async def respond_and_log_punishment(self, interactions:discord.Interaction, punishment_info:tuple, member:discord.Member, expiry:datetime, reason:str, handle_dm=True):
         punishment_type:str = punishment_info[0]
         punishment_id:str = punishment_info[1]
@@ -86,6 +87,12 @@ class PunishmentSystem(BaseModule):
             ).create())
         except Exception:
             pass
+
+    async def to_punishment_logs(self, user:discord.User, punishment_type:str, reason:str=None, expiry:datetime=None):
+        #TODO: Implement
+        pass
+
+    # Punishment System Internal Utilities
     
     async def duration_str_to_time(self, duration:str) -> timedelta:
         m = h = d = w = 0
@@ -159,9 +166,9 @@ class ExpiredPunishmentManager(PunishmentSystem):
         )
 
         if results:
+            server:discord.Guild = self.d_consts.SERVER
             for row in results:
                 try:
-                    server:discord.Guild = self.d_consts.SERVER
                     user:discord.User = await self.client.fetch_user(row['UserID'])
                     await server.unban(user)
                 except Exception:

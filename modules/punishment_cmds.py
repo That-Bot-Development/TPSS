@@ -117,7 +117,12 @@ class PunishmentCommands(PunishmentSystem):
             await self.send_punishment_dm(member,pun_type,None,reason,footer_message="If you feel as if your punishment should be removed, please fill out [this](https://forms.gle/ewMRCRny6RQMZxna9) form. Please be reasonable when submitting your appeal.")
 
             # Issue a Discord Ban on this user
-            await member.ban(reason=reason)
+            server:discord.Guild = self.d_consts.SERVER
+            try:
+                user:discord.User = await self.client.fetch_user(user.id)
+                await server.ban(user, reason=reason)
+            except Exception:
+                pass
 
             # Commit to database
             id = None
@@ -133,3 +138,64 @@ class PunishmentCommands(PunishmentSystem):
             return
 
         await self.respond_and_log_punishment(interactions,(pun_type,id),member,None,reason,handle_dm=False)
+
+    # Punishment Removal Commands
+
+    @app_commands.command(name="unmute", description="Unmutes the specified user.")
+    @app_commands.describe(user="The user to be unmuted.")
+    async def mute(self, interactions: discord.Interaction, user:discord.User):
+        pun_type = "unmute"
+        reason=f"Unmuted by {interactions.user.display_name}."
+
+        member = await self.get_member(user.id)
+
+        try:
+            # Remove Discord Timeout on this user
+            await member.timeout(timedelta(seconds=0),reason)
+
+            # Commit to database
+            id = None
+            id = await self.commit_punishment(
+                user_id=member.id,
+                punishment_type=pun_type,
+                reason=reason,
+                issued_by_id=interactions.user.id,
+                expires=None
+            )
+        except Exception as e:
+            await self.create_punishment_err(interactions,pun_type,e)
+            return
+
+        await self.respond_and_log_punishment(interactions,(pun_type,id),member,None,reason)
+
+    @app_commands.command(name="unban", description="Unban the specified user.")
+    @app_commands.describe(user="The user to be unbanned.")
+    async def mute(self, interactions: discord.Interaction, user:discord.User):
+        pun_type = "unban"
+        reason=f"Unbanned by {interactions.user.display_name}."
+
+        member = await self.get_member(user.id)
+
+        try:
+            # Remove Discord Ban on this user
+            server:discord.Guild = self.d_consts.SERVER
+            try:
+                user:discord.User = await self.client.fetch_user(user.id)
+                await server.unban(user, reason=reason)
+            except Exception:
+                pass
+
+            # Commit to database
+            id = None
+            id = await self.commit_punishment(
+                user_id=member.id,
+                punishment_type=pun_type,
+                reason=reason,
+                issued_by_id=interactions.user.id,
+                expires=None
+            )
+        except Exception as e:
+            await self.create_punishment_err(interactions,pun_type,e)
+            return
+
+        await self.respond_and_log_punishment(interactions,(pun_type,id),member,None,reason)

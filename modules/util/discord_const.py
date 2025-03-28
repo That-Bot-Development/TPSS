@@ -3,7 +3,7 @@ from discord.ext import commands
 
 from modules.base import BaseModule
 
-#TODO: Consider making this configurable through discord instead of hardcoded
+#TODO: Make this configurable through discord instead of hardcoded
 class DiscordConstants(BaseModule):
     _instance = None
 
