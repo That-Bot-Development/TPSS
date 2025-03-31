@@ -111,7 +111,7 @@ class ModMail(BaseModule):
         view = View(timeout=None)
         view.add_item(mm_select)
 
-        msg = await self.d_consts.CHANNEL_MODMAIL.fetch_message(1040873181159886909)
+        msg = await self.d_consts.CHANNEL_MODMAIL.fetch_message(1040873181159886909) #TODO: Move reference to config whenever that is done
         await msg.edit(content="", embed=EmbedMaker(
             embed_type=EmbedType.MOD_MAIL,
             title="That Place Mod Mail",

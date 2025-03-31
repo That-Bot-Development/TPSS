@@ -5,7 +5,7 @@ from modules.punishment_system import PunishmentSystem, DurationOutOfBoundsError
 from modules.util.embed_maker import *
 
 from datetime import *
-
+#TODO: Manage Members permission check failsafe
 class PunishmentCommands(PunishmentSystem):
     def __init__(self, client):
         self.client = client

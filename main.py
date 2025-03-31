@@ -20,7 +20,7 @@ import modules.punishment_case_cmds as pcc
 import modules.fun as f
 import modules.utilities as u
 
-debug = True
+debug = False
 
 # Set up bot
 GUID = discord.Object(id=578356230637223936)
