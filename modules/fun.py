@@ -12,7 +12,7 @@ class Say(BaseModule):
     def __init__(self, client):
         self.client = client
 
-    @app_commands.command(name="say", description="Put words in That Bot's figurative mouth.")
+    @app_commands.command(name="say", description="Attempt to get That Bot to respond.")
     @app_commands.describe(message="The message to have the bot send.",replyto="The Message ID of the message the bot will respond to.")
     async def say(self, interactions: discord.Interaction, message:str, replyto:str=None):
 

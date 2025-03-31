@@ -19,8 +19,9 @@ import modules.punishment_cmds as pc
 import modules.punishment_case_cmds as pcc
 import modules.fun as f
 import modules.utilities as u
+import modules.versionA as va
 
-debug = True
+debug = False
 
 # Set up bot
 GUID = discord.Object(id=578356230637223936)
@@ -57,6 +58,7 @@ async def init_cogs():
         await client.add_cog(am.ArtManager(client))
         await client.add_cog(f.Say(client))
         await client.add_cog(f.Cat(client))
+        await client.add_cog(va.Commands(client))
     else:
         # Debug Modules / Cogs
         await client.add_cog(ps.PunishmentSystem(client))
