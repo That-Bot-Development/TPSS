@@ -44,11 +44,7 @@ class PunishmentSystem(BaseModule):
             error=True
         ).create(),ephemeral=True,delete_after=20)
         
-    #TODO: Consider restructuring parameters for this & pun dm, consider splitting up given it isnt always done at the same time anyways (handle_dm boolean)
-    async def respond_and_log_punishment(self, interactions:discord.Interaction, punishment_info:tuple, member:discord.Member, expiry:datetime, reason:str, handle_dm=True):
-        punishment_type:str = punishment_info[0]
-        punishment_id:str = punishment_info[1]
-        
+    async def send_punishment_response(self, interactions:discord.Interaction, member:discord.Member, punishment_type:str, punishment_id:str, reason:str, expiry:datetime = None):    
         cmd_response_message = f"**Case #{punishment_id}**: **{member.display_name}** has been {self.past_tense(punishment_type).lower()} with reason '*{reason}*'."
 
         if expiry is not None:
@@ -64,12 +60,7 @@ class PunishmentSystem(BaseModule):
             message=cmd_response_message
         ).create())
 
-        # TODO: Link to Logging System
-
-        if handle_dm:
-            await self.send_punishment_dm(member,punishment_type,expiry,reason)
-
-    async def send_punishment_dm(self, member:discord.Member, punishment_type:str, expiry:datetime, reason, footer_message=''):
+    async def send_punishment_dm(self, member:discord.Member, punishment_type:str, reason:str, expiry:datetime=None, footer_message:str=''):
         try:
             message = f"**Reason**: {reason}"
 

@@ -31,7 +31,8 @@ class PunishmentCommands(PunishmentSystem):
             await self.create_punishment_err(interactions,pun_type,e)
             return
 
-        await self.respond_and_log_punishment(interactions,(pun_type,id),member,None,reason)
+        await self.send_punishment_response(interactions,member,pun_type,id,reason)
+        await self.send_punishment_dm(member,pun_type,reason)
     
     
     # TODO: Check on incorrect dates in DB, see pinned
@@ -64,7 +65,8 @@ class PunishmentCommands(PunishmentSystem):
             await self.create_punishment_err(interactions,pun_type,e)
             return
 
-        await self.respond_and_log_punishment(interactions,(pun_type,id),member,member.timed_out_until,reason)
+        await self.send_punishment_response(interactions,member,pun_type,id,reason, member.timed_out_until)
+        await self.send_punishment_dm(member,pun_type,reason,member.timed_out_until)
 
     @app_commands.command(name="kick", description="Kicks the specified user.")
     @app_commands.describe(user="The user to be kicked.", reason="The reason for the punishment.")
@@ -75,7 +77,7 @@ class PunishmentCommands(PunishmentSystem):
 
         try:
             # DM must be sent before kicking the user from the server
-            await self.send_punishment_dm(member,pun_type,None,reason)
+            await self.send_punishment_dm(member,pun_type,reason)
 
             # Issue a Discord Kick on this user
             await member.kick(reason=reason)
@@ -93,7 +95,7 @@ class PunishmentCommands(PunishmentSystem):
             await self.create_punishment_err(interactions,pun_type,e)
             return
 
-        await self.respond_and_log_punishment(interactions,(pun_type,id),member,None,reason,handle_dm=False)
+        await self.send_punishment_response(interactions,member,pun_type,id,reason)
 
     @app_commands.command(name="ban", description="Bans the specified user.")
     @app_commands.describe(user="The user to be banned.", reason="The reason for the punishment.", duration="(optional) The length of the punishment. (m = Minutes, h = Hours, d = Days, w = Weeks, M = Months, y = Years)")
@@ -114,7 +116,7 @@ class PunishmentCommands(PunishmentSystem):
 
 
             # DM must be sent before banning the user from the server
-            await self.send_punishment_dm(member,pun_type,None,reason,footer_message="If you feel as if your punishment should be removed, please fill out [this](https://forms.gle/ewMRCRny6RQMZxna9) form. Please be reasonable when submitting your appeal.")
+            await self.send_punishment_dm(member,pun_type,reason,footer_message="If you feel as if your punishment should be removed, please fill out [this](https://forms.gle/ewMRCRny6RQMZxna9) form. Please be reasonable when submitting your appeal.")
 
             # Issue a Discord Ban on this user
             server:discord.Guild = self.d_consts.SERVER
@@ -137,7 +139,7 @@ class PunishmentCommands(PunishmentSystem):
             await self.create_punishment_err(interactions,pun_type,e)
             return
 
-        await self.respond_and_log_punishment(interactions,(pun_type,id),member,None,reason,handle_dm=False)
+        await self.send_punishment_response(interactions,member,pun_type,id,reason)
 
     # Punishment Removal Commands
 
@@ -166,7 +168,7 @@ class PunishmentCommands(PunishmentSystem):
             await self.create_punishment_err(interactions,pun_type,e)
             return
 
-        await self.respond_and_log_punishment(interactions,(pun_type,id),member,None,reason)
+        await self.send_punishment_response(interactions,member,pun_type,id,reason)
 
     @app_commands.command(name="unban", description="Unban the specified user.")
     @app_commands.describe(user="The user to be unbanned.")
@@ -183,6 +185,7 @@ class PunishmentCommands(PunishmentSystem):
                 user:discord.User = await self.client.fetch_user(user.id)
                 await server.unban(user, reason=reason)
             except Exception:
+                # Fallback, this shouldn't ever trigger as Discord prevents invalid IDs from being entered
                 pass
 
             # Commit to database
@@ -198,4 +201,4 @@ class PunishmentCommands(PunishmentSystem):
             await self.create_punishment_err(interactions,pun_type,e)
             return
 
-        await self.respond_and_log_punishment(interactions,(pun_type,id),member,None,reason)
+        await self.send_punishment_response(interactions,member,pun_type,id,reason)
