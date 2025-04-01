@@ -6,28 +6,40 @@ from modules.util.embed_maker import *
 
 import requests
 import time
+import random
 
 
 class Say(BaseModule):
     def __init__(self, client):
         self.client = client
 
-    @app_commands.command(name="say", description="Attempt to get That Bot to respond.")
-    @app_commands.describe(message="The message to have the bot send.",replyto="The Message ID of the message the bot will respond to.")
+    @app_commands.command(name="say", description="Attempt to get That Furret to respond.")
+    @app_commands.describe(message="The message to have the furret say.",replyto="The Message ID of the message the furret will respond to.")
     async def say(self, interactions: discord.Interaction, message:str, replyto:str=None):
 
         try:
-            if replyto == None:
-                response = await interactions.channel.send(message)
+            if self.d_consts.ROLE_OWNER in interactions.user.roles or self.d_consts.ROLE_ADMIN in interactions.user.roles or self.d_consts.ROLE_MOD in interactions.user.roles:
+                if replyto == None:
+                    response = await interactions.channel.send(message)
+                else:
+                    response = await interactions.channel.fetch_message(replyto)
+                    await response.reply(message)
+                await self.d_consts.CHANNEL_MISCLOGS.send(embed=EmbedMaker(
+                    embed_type=EmbedType.ACTIVITY_LOG,
+                    title = "Say Command",
+                    message=f"**{interactions.user.display_name}:** {message} ({response.jump_url})"
+                ).create(),silent=True,allowed_mentions=self.d_consts.VAR_ALLOWEDMENTIONS_NONE)
+                await interactions.response.send_message("<:Advertisement:622603404212174849>",ephemeral=True,delete_after=0)
             else:
-                response = await interactions.channel.fetch_message(replyto)
-                await response.reply(message)
-            await self.d_consts.CHANNEL_MISCLOGS.send(embed=EmbedMaker(
-                embed_type=EmbedType.ACTIVITY_LOG,
-                title = "Say Command",
-                message=f"**{interactions.user.display_name}:** {message} ({response.jump_url})"
-            ).create(),silent=True,allowed_mentions=self.d_consts.VAR_ALLOWEDMENTIONS_NONE)
-            await interactions.response.send_message("<:Advertisement:622603404212174849>",ephemeral=True,delete_after=0)
+                messages = [
+                    f"Who do you think you are to command me around, {interactions.user.mention}?",
+                    f"Who even are you, {interactions.user.mention}?",
+                    f"Furret doesn't take commands from strangers, {interactions.user.mention}.",
+                    f"Who do you think you are, {interactions.user.mention}?",
+                    f"{interactions.user.mention}...",
+                    f"I've had enough, {interactions.user.mention}."
+                ]
+                await interactions.response.send_message(content=messages[random.randint(0,6)])
 
         except Exception as e:
             print(f"Exception occured in 'say' operation: {e}")
@@ -44,41 +56,9 @@ class Cat(BaseModule):
     @app_commands.describe(filter="Filter what type of cat you would like provided.")
     async def cat(self, interactions: discord.Interaction, filter:str=None):
 
-        try:
-            if filter == None:
-                response = requests.get(f"https://cataas.com/cat?{int(time.time())}")
-            else:
-                response = requests.get(f"https://cataas.com/cat/{filter}?{int(time.time())}")
-            if response.status_code == 200:
-                # Create a Discord embed with the cat image
-                 # Get the content type (e.g., image/jpeg, image/png)
-                content_type = response.headers.get('Content-Type')
+        await interactions.response.send_message(embed=EmbedMaker(
+            embed_type=EmbedType.MISC,
+            message="A cat is not a furret.\nWhy would you use this command?",
+            error=True
+        ).create())
 
-                # Extract the image extension from the content type
-                if content_type:
-                    ext = content_type.split('/')[-1]  # Get the file extension (e.g., jpeg, png, gif)
-                else:
-                    ext = "bin"  # If content type isn't available, use a generic extension
-                
-                with open(f"cat.{ext}", "wb") as file:
-                    # Write the image content to the file
-                    file.write(response.content)
-
-                with open(f"cat.{ext}", "rb") as file:
-                    dFile = discord.File(file,filename=f"cat.{ext}")
-                    
-                embed = discord.Embed(title="")
-                embed.set_footer(text="From CatAAS")
-                embed.set_image(url=f"attachment://cat.{ext}")  # Use the URL from the response
-                await interactions.response.send_message(file=dFile,embed=embed)
-            else:
-                raise Exception(f"Encountered code {response.status_code}")
-
-        except Exception as e:
-            print(f"Exception occured in 'cat' operation: {e}")
-            await interactions.response.send_message(embed=EmbedMaker(
-                embed_type=EmbedType.MISC,
-                message="This likely means the [CatAAS API](https://cataas.com/) is down.\n\nContact an Admin if you believe this is a mistake.",
-                error=True
-            ).create(),ephemeral=True,delete_after=20)
-        
