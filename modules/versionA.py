@@ -7,9 +7,9 @@ from modules.util.embed_maker import *
 import requests
 import time
 
-
+import random 
 class Commands(BaseModule):
-    asleep = False
+    asleep = True
 
     def __init__(self, client):
         self.client = client
@@ -28,7 +28,16 @@ class Commands(BaseModule):
 
     @app_commands.command(name="praise", description="Praise furret!")
     async def praise(self, interactions: discord.Interaction):
+
         if not self.asleep:
+            chance = random.randint(0,9)
+            if chance == 9:
+                await interactions.response.send_message(embed=EmbedMaker(
+                    embed_type=EmbedType.VERSION_A,
+                    message="",
+                    title="Furret unleashes a terrible curse upon you!",
+                    image_url="https://i.imgur.com/z3TXpZ8.png"
+                ).create())
             await interactions.response.send_message(embed=EmbedMaker(
                 embed_type=EmbedType.VERSION_A,
                 message="",

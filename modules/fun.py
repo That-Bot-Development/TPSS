@@ -39,7 +39,7 @@ class Say(BaseModule):
                     f"{interactions.user.mention}...",
                     f"I've had enough, {interactions.user.mention}."
                 ]
-                await interactions.response.send_message(content=messages[random.randint(0,6)])
+                await interactions.response.send_message(content=messages[random.randint(0,5)])
 
         except Exception as e:
             print(f"Exception occured in 'say' operation: {e}")
