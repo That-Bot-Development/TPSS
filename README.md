@@ -1,4 +1,5 @@
-# TPSS
+# TPSS - April Fools 2025
+### This release is an april fools joke - Code was thrown together and probably has bugs
 Repository for That Place Server System - "That Bot"
 ___
 
