@@ -36,6 +36,7 @@ class Say(BaseModule):
                 message="This likely means That Bot does not have access to speak in this channel.\n\nContact an Admin if you believe this is a mistake.",
                 error=True
             ).create(),ephemeral=True,delete_after=20)
+
 class Cat(BaseModule):
     def __init__(self, client):
         self.client = client
@@ -50,7 +51,6 @@ class Cat(BaseModule):
             else:
                 response = requests.get(f"https://cataas.com/cat/{filter}?{int(time.time())}")
             if response.status_code == 200:
-                # Create a Discord embed with the cat image
                  # Get the content type (e.g., image/jpeg, image/png)
                 content_type = response.headers.get('Content-Type')
 
@@ -70,6 +70,7 @@ class Cat(BaseModule):
                 embed = discord.Embed(title="")
                 embed.set_footer(text="From CatAAS")
                 embed.set_image(url=f"attachment://cat.{ext}")  # Use the URL from the response
+                #TODO: Replace with EmbedMaker
                 await interactions.response.send_message(file=dFile,embed=embed)
             else:
                 raise Exception(f"Encountered code {response.status_code}")

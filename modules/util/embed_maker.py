@@ -13,15 +13,19 @@ class EmbedType(Enum):
     MISC = 3
 
 class EmbedMaker(BaseModule):
-    def __init__(self, embed_type:EmbedType, message:str, title:str="", error:bool=False):
+    def __init__(self, embed_type:EmbedType, message:str, title:str="", image_url:str="", error:bool=False):
         #self.client = client
         self.embed_type = embed_type
         self.message = message
         self.title = title
+        self.image_url = image_url
         self.error = error
 
     def create(self):
-        embed = discord.Embed(color=0x69B2FF, title=self.title,description=self.message)
+        embed = discord.Embed(color=0xD3B683, title=self.title,description=self.message)
+
+        if self.image_url is not None:
+            embed.set_image(url=self.image_url)
 
         match self.embed_type:
             case EmbedType.MOD_MAIL:
