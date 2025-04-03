@@ -22,7 +22,7 @@ class EmbedMaker(BaseModule):
         self.error = error
 
     def create(self):
-        embed = discord.Embed(color=0xD3B683, title=self.title,description=self.message)
+        embed = discord.Embed(color=0x69b2ff, title=self.title,description=self.message)
 
         if self.image_url is not None:
             embed.set_image(url=self.image_url)

@@ -2,14 +2,15 @@ import discord
 from discord.ext import commands;
 
 from modules.util.sql_manager import SQLManager
+from modules.util.discord_const import DiscordConstants
 
 
 class BaseModule(commands.Cog):
     # "Global" items that all modules should be able to access
     client:discord.Client = None
     bot_started = False
-    version = "2.7.0" # Move to config, add getter
-    d_consts = None
+    version = "2.8.0" # Move to config, add getter
+    d_consts:DiscordConstants = None
     sql:SQLManager = None
 
 

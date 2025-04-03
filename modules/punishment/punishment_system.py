@@ -44,13 +44,13 @@ class PunishmentSystem(BaseModule):
             error=True
         ).create(),ephemeral=True,delete_after=20)
         
-    async def send_punishment_response(self, interactions:discord.Interaction, member:discord.Member, punishment_type:str, punishment_id:str, reason:str, expiry:datetime = None):    
-        cmd_response_message = f"**Case #{punishment_id}**: **{member.display_name}** has been {self.past_tense(punishment_type).lower()} with reason '*{reason}*'."
+    async def send_punishment_response(self, interactions:discord.Interaction, user:discord.User, punishment_type:str, punishment_id:str, reason:str, expiry:datetime = None):    
+        cmd_response_message = f"**Case #{punishment_id}**: **{user.display_name}** has been {self.past_tense(punishment_type).lower()} with reason '*{reason}*'."
 
         if expiry is not None:
             try:
                 expiry_f:str = expiry.strftime("%d/%m/%Y @ %H:%M:%S")
-                cmd_response_message += f"\n\nThis punishment will expire on `{expiry_f}`"
+                cmd_response_message += f"\n\nThis punishment will expire on `{expiry_f}`."
             except Exception:
                 pass
 
@@ -79,8 +79,20 @@ class PunishmentSystem(BaseModule):
         except Exception:
             pass
 
-    async def to_punishment_logs(self, user:discord.User, punishment_type:str, reason:str=None, expiry:datetime=None):
-        #TODO: Implement
+    async def to_punishment_logs(self, user:discord.User, punishment_type:str, punishment_id:str, reason:str=None, expiry:datetime=None):
+        logs = self.d_consts.CHANNEL_MODLOGS
+
+        if expiry is not None:
+            expiry_f = f"`{expiry.strftime("%d/%m/%Y @ %H:%M:%S")}`"
+        else:
+            expiry_f = "Never"
+
+        await logs.send(embed=EmbedMaker(
+            embed_type=EmbedType.USER_MANAGEMENT,
+            title=f"Case #{punishment_id}",
+            message=f"**{user.name}** - {punishment_type.lower()}\n**Reason**: {reason}\n**Expires**: {expiry_f}"
+        ).create())
+
         pass
 
     # Punishment System Internal Utilities
@@ -146,6 +158,7 @@ class ExpiredPunishmentManager(PunishmentSystem):
         #if not self.remove_expired_punishments.is_running():
          #   self.remove_expired_punishments.start()
 
+    #NOTE: Not a fan of this implementation, could be done better if we had a 'expired' column for temp-bans
     @tasks.loop(minutes=1)
     async def unban_expired_tempbans(self):
         '''Removes all expires tempbans'''

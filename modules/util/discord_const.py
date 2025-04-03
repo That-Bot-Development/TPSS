@@ -1,10 +1,8 @@
 import discord
 from discord.ext import commands
 
-from modules.base import BaseModule
-
 #TODO: Make this configurable through discord instead of hardcoded
-class DiscordConstants(BaseModule):
+class DiscordConstants(commands.Cog):
     _instance = None
 
     # Define as singleton
@@ -17,7 +15,7 @@ class DiscordConstants(BaseModule):
         self.client = client
 
         # Initialize all constants. Defined in define_constants on bot ready call
-        self.SERVER = self.CHANNEL_MODMAIL = self.CHANNEL_MISCLOGS = self.CHANNEL_SUGGESTIONS = self.CHANNEL_YOURART = self.ROLE_OWNER = self.ROLE_OWNER = self.ROLE_ADMIN = self.ROLE_MOD = self.ROLE_MMMISC = self.ROLE_COREBOTS = self.VAR_ALLOWEDMENTIONS_NONE = None
+        self.SERVER = self.CHANNEL_MODMAIL = self.CHANNEL_MISCLOGS = self.CHANNEL_MODLOGS = self.CHANNEL_SUGGESTIONS = self.CHANNEL_YOURART = self.ROLE_STAFF = self.ROLE_OWNER = self.ROLE_ADMIN = self.ROLE_MOD = self.ROLE_MMMISC = self.ROLE_COREBOTS = self.VAR_ALLOWEDMENTIONS_NONE = None
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -30,10 +28,12 @@ class DiscordConstants(BaseModule):
         # CHANNELS
         self.CHANNEL_MODMAIL = self.SERVER.get_channel(986085007246381147)
         self.CHANNEL_MISCLOGS = self.SERVER.get_channel(608465315755720714)
+        self.CHANNEL_MODLOGS = self.SERVER.get_channel(579800016068018186)
         self.CHANNEL_SUGGESTIONS = self.SERVER.get_channel(1037952455188693042)
         self.CHANNEL_YOURART = self.SERVER.get_channel(579313588972552193)
 
         # ROLES
+        self.ROLE_STAFF = self.SERVER.get_role(624857677088030760)
         self.ROLE_OWNER = self.SERVER.get_role(578357103144468490)
         self.ROLE_ADMIN = self.SERVER.get_role(578356923611611146)
         self.ROLE_MOD = self.SERVER.get_role(624816689393041425)
