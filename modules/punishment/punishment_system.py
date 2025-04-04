@@ -87,13 +87,15 @@ class PunishmentSystem(BaseModule):
         else:
             expiry_f = "Never"
 
-        await logs.send(embed=EmbedMaker(
-            embed_type=EmbedType.USER_MANAGEMENT,
-            title=f"Case #{punishment_id}",
-            message=f"**{user.name}** - {punishment_type.lower()}\n**Reason**: {reason}\n**Expires**: {expiry_f}"
-        ).create())
-
-        pass
+        try:
+            await logs.send(embed=EmbedMaker(
+                embed_type=EmbedType.USER_MANAGEMENT,
+                title=f"Case #{punishment_id}",
+                message=f"**{user.name}** - {punishment_type.lower()}\n**Reason**: {reason}\n**Expires**: {expiry_f}"
+            ).create())
+        except Exception:
+            # TODO: handle!
+            pass
 
     # Punishment System Internal Utilities
     

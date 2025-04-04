@@ -153,7 +153,7 @@ class PunishmentCommands(PunishmentSystem):
     @app_commands.command(name="unmute", description="Unmutes the specified user.")
     @app_commands.checks.has_role("Staff")
     @app_commands.describe(member="The member to be unmuted.")
-    async def mute(self, interactions: discord.Interaction, member:discord.Member):
+    async def unmute(self, interactions: discord.Interaction, member:discord.Member):
         pun_type = "unmute"
         reason=f"Unmuted by {interactions.user.display_name}."
 
@@ -182,7 +182,7 @@ class PunishmentCommands(PunishmentSystem):
     @app_commands.command(name="unban", description="Unban the specified user.")
     @app_commands.checks.has_role("Staff")
     @app_commands.describe(user="The user to be unbanned.")
-    async def mute(self, interactions: discord.Interaction, user:discord.User):
+    async def unban(self, interactions: discord.Interaction, user:discord.User):
         pun_type = "unban"
         reason=f"Unbanned by {interactions.user.display_name}"
 
