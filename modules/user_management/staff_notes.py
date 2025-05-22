@@ -6,7 +6,7 @@ from modules.util.embed_maker import *
 from datetime import *
 from mysql.connector import Error as sql_error
 
-class UserNotes(BaseModule):
+class StaffNotes(BaseModule):
     def __init__(self, client):
         self.client = client
 

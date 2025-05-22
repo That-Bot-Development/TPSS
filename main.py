@@ -17,6 +17,7 @@ import modules.art_manager as am
 import modules.user_management.punishment_system as ps
 import modules.user_management.punishment_cmds as pc
 import modules.user_management.punishment_case_cmds as pcc
+import modules.user_management.staff_notes as sn
 import modules.fun as f
 import modules.utilities as u
 
@@ -61,6 +62,7 @@ async def init_cogs():
         await client.add_cog(ps.ExpiredPunishmentManager(client))
         await client.add_cog(pc.PunishmentCommands(client))
         await client.add_cog(pcc.PunishmentCaseCommands(client))
+        await client.add_cog(sn.StaffNotes(client))
         await client.add_cog(u.SQLQuery(client))
     else:
         # Debug Modules / Cogs
