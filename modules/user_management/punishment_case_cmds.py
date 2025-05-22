@@ -50,7 +50,7 @@ class PunishmentCaseCommands(PunishmentSystem):
         
         try:
             notes = self.staff_notes.get_notes(user.id,small=True)
-            message += f"\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n<:note:1374949963825680484> **Notes**\n\n{notes}" if notes else "*No notes found.*"
+            message += f"\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n<:note:1374949963825680484> **Notes**\n\n{notes}" if notes else "*No notes found.*"
         except Exception as e:
             print(f"Exception occured in 'list notes (external)' operation: {e}")
 
