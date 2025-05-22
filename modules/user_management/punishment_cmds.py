@@ -198,11 +198,7 @@ class PunishmentCommands(PunishmentSystem):
     @app_commands.describe(user="The user to be unbanned.")
     async def unban(self, interactions: discord.Interaction, user:discord.User):
         pun_type = "unban"
-<<<<<<< Updated upstream:modules/user_management/punishment_cmds.py
         reason=f"Unbanned by {interactions.user.display_name}"
-=======
-        reason=f"Unbanned by {interactions.user.display_name}."
->>>>>>> Stashed changes:modules/punishment_cmds.py
 
         try:
             # Remove Discord Ban on this user
@@ -227,11 +223,6 @@ class PunishmentCommands(PunishmentSystem):
         except Exception as e:
             await self.create_punishment_err(interactions,pun_type,e)
             return
-<<<<<<< Updated upstream:modules/user_management/punishment_cmds.py
 
         await self.send_punishment_response(interactions,user,pun_type,id,reason)
         await self.to_punishment_logs(user,pun_type,id,reason)
-=======
-        #FIXME No member to provide here... can be fixed by splitting up the parts of this function
-        await self.respond_and_log_punishment(interactions,(pun_type,id),member,None,reason)
->>>>>>> Stashed changes:modules/punishment_cmds.py
