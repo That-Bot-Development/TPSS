@@ -110,10 +110,3 @@ class PunishmentCaseCommands(PunishmentSystem):
             title=title,
             message=message
         ).create())
-
-    # TODO: Move to some sort of utilities class? Probably also true for the function I just moved to base
-    def truncate_string(self, text, max_length=16):
-        """Truncates a string and adds ellipsis if it exceeds max_length."""
-        if len(text) > max_length:
-            return text[:max_length] + "..."
-        return text
