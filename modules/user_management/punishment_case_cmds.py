@@ -57,11 +57,11 @@ class PunishmentCaseCommands(PunishmentSystem):
 
                 message += "\n\n-# <:alert:1346654360012329044> Notes could not be loaded."
 
-            await interactions.response.send_message(embed=EmbedMaker(
-                embed_type=EmbedType.USER_MANAGEMENT,
-                title=f"Punishments: {self.truncate_string(user.display_name)}",
-                message=message
-            ).create())
+        await interactions.response.send_message(embed=EmbedMaker(
+            embed_type=EmbedType.USER_MANAGEMENT,
+            title=f"Punishments: {self.truncate_string(user.display_name)}",
+            message=message
+        ).create())
 
     @app_commands.command(name="case", description="View a specific punishment case.")
     @app_commands.checks.has_role("Staff")
