@@ -10,7 +10,8 @@ from datetime import *
 
 
 class PunishmentCaseCommands(PunishmentSystem):
-    def __init__(self):
+    def __init__(self, client):
+        self.client = client #TODO this is redundant, done in base class... use super().__init__(client)
         self.staff_notes = None
 
     async def cog_load(self):
