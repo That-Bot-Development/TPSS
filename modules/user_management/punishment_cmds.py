@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 
-from modules.punishment.punishment_system import PunishmentSystem, DurationOutOfBoundsError
+from modules.user_management.punishment_system import PunishmentSystem, DurationOutOfBoundsError
 from modules.util.embed_maker import *
 
 from datetime import *
@@ -159,7 +159,7 @@ class PunishmentCommands(PunishmentSystem):
 
         try:
             # Remove Discord Timeout on this user
-            await member.timeout(timedelta(seconds=0),reason)
+            await member.timeout(timedelta(seconds=0),reason=reason)
 
             # Commit to database
             id = None

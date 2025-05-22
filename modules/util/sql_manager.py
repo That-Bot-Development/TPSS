@@ -19,7 +19,13 @@ class SQLManager:
         self.password = config['db_password']
         self.database = config['db_name']
 
-        self.initialize_pool()
+        self.pool = None
+        try:
+            self.initialize_pool()
+        except Exception as e:
+            #TODO: Individual error handling
+            print(f"-- Couldn't connect to SQL database! --\n{e}")
+            pass
 
     def initialize_pool(self, pool_name="UserDataPool", pool_size=5):
         # Initialize the connection pool
@@ -40,9 +46,11 @@ class SQLManager:
 
     def get_connection(self):
         # Get a connection from the pool
-        if not self.pool:
-            raise Exception("Connection pool is not initialized.")
-        return self.pool.get_connection()
+        if self.pool:
+            return self.pool.get_connection()
+        else:
+            # TODO: Change to custom exception type, catch for commands, and other uses 
+            raise Exception("No connection pool available!")
 
     def execute_query(self, query: str, params=None, insert_return_query=None, handle_except=True, connection=None):
         # Determine if we should manage the connection

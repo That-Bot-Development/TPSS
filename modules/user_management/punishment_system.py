@@ -12,16 +12,13 @@ class PunishmentSystem(BaseModule):
     """Base class for the That Bot Punishment System"""
 
     async def commit_punishment(self, user_id:int, punishment_type:str, reason:str, issued_by_id:int, expires:datetime=None):
-        try:
-            with self.sql.get_connection() as connection:
-                self.sql.execute_query("""
-                    INSERT INTO Punishments (UserID, Type, Reason, IssuedByID, ExpiresAt) 
-                    VALUES (%s,%s,%s,%s,%s)
-                """,(user_id,punishment_type,reason,issued_by_id,expires),connection=connection,handle_except=False)
+        with self.sql.get_connection() as connection:
+            self.sql.execute_query("""
+                INSERT INTO Punishments (UserID, Type, Reason, IssuedByID, ExpiresAt) 
+                VALUES (%s,%s,%s,%s,%s)
+            """,(user_id,punishment_type,reason,issued_by_id,expires),connection=connection,handle_except=False)
 
-                result = self.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = LAST_INSERT_ID()",connection=connection,handle_except=False)
-        except sql_error:
-            raise
+            result = self.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = LAST_INSERT_ID()",connection=connection,handle_except=False)
 
         id = result[0]['CaseNo'] if result else "?"
 

@@ -14,9 +14,9 @@ import modules.modmail.mod_mail as mm
 import modules.ban_dm as bd
 import modules.suggestion_manager as sm
 import modules.art_manager as am
-import modules.punishment.punishment_system as ps
-import modules.punishment.punishment_cmds as pc
-import modules.punishment.punishment_case_cmds as pcc
+import modules.user_management.punishment_system as ps
+import modules.user_management.punishment_cmds as pc
+import modules.user_management.punishment_case_cmds as pcc
 import modules.fun as f
 import modules.utilities as u
 
