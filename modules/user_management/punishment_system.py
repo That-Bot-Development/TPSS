@@ -33,6 +33,8 @@ class PunishmentSystem(BaseModule):
             message = str(e)
         elif isinstance(e,MemberNotFoundError):
             message = "This member could not be found.\nPlease ensure you entered the correct information.\nThis command will not work if the user is no longer in the server."
+        elif isinstance(e,SelfPunishError):
+            message = "You tried to punish yourself. Genius stuff."
         else:
             message = "This action could not be completed.\nPlease ensure you have the required permissions.\n\nIf the issue persists, contact an admin."
 
@@ -203,3 +205,9 @@ class DurationParseError(Exception):
 class DurationOutOfBoundsError(Exception):
     """Thrown when the specified duration is out of bounds for the given context."""
     pass
+
+class SelfPunishError(Exception):
+    """Thrown when a user attempts to issue a punishment on themselves."""
+    
+    def __init__(self, user:discord.User, pun_type:str):
+        super().__init__(f"{user.display_name} attempted to {pun_type} themselves.")

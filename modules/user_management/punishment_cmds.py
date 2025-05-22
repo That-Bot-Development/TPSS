@@ -2,7 +2,7 @@ import discord
 from discord import app_commands
 
 from modules.base import MemberNotFoundError
-from modules.user_management.punishment_system import PunishmentSystem, DurationOutOfBoundsError
+from modules.user_management.punishment_system import PunishmentSystem, DurationOutOfBoundsError, SelfPunishError
 from modules.util.embed_maker import *
 
 from datetime import *
@@ -22,6 +22,9 @@ class PunishmentCommands(PunishmentSystem):
         pun_type = "warn"
 
         try:
+            if interactions.user.id == member.id:
+                raise SelfPunishError(interactions.user,pun_type)
+
             # Commit to database
             id = None
             id = await self.commit_punishment(
@@ -48,6 +51,9 @@ class PunishmentCommands(PunishmentSystem):
         pun_type = "mute"
 
         try:
+            if interactions.user.id == member.id:
+                raise SelfPunishError(interactions.user,pun_type)
+
             time = await self.duration_str_to_time(duration)
 
             if time > timedelta(days=28) or time < timedelta(0):
@@ -55,7 +61,6 @@ class PunishmentCommands(PunishmentSystem):
 
             # Issue a Discord Timeout on this user
             await member.timeout(time,reason=reason)
-            print(member.timed_out_until)
 
             # Commit to database
             id = None
@@ -82,6 +87,9 @@ class PunishmentCommands(PunishmentSystem):
         pun_type = "kick"
 
         try:
+            if interactions.user.id == member.id:
+                raise SelfPunishError(interactions.user,pun_type)
+            
             # DM must be sent before kicking the user from the server
             await self.send_punishment_dm(member,pun_type,reason)
 
@@ -118,6 +126,9 @@ class PunishmentCommands(PunishmentSystem):
             member = None
 
         try:
+            if interactions.user.id == member.id:
+                raise SelfPunishError(interactions.user,pun_type)
+            
             if duration is not None:
                 pun_type = "temp-ban"
 
