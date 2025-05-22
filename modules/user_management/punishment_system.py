@@ -1,7 +1,7 @@
 import discord
 from discord.ext import tasks, commands
 
-from modules.base import BaseModule
+from modules.base import BaseModule, MemberNotFoundError
 from modules.util.embed_maker import *
 
 from datetime import *
@@ -31,6 +31,8 @@ class PunishmentSystem(BaseModule):
             message = "The duration could not be parsed.\nPlease ensure you follow the proper format:\n> m = Minutes, h = Hours, d = Days, w = Weeks, M = Months, y = Years\n*ex.* **2d 5h**"
         elif isinstance(e,DurationOutOfBoundsError):
             message = str(e)
+        elif isinstance(e,MemberNotFoundError):
+            message = "This member could not be found.\nPlease ensure you entered the correct information.\nThis command will not work if the user is no longer in the server."
         else:
             message = "This action could not be completed.\nPlease ensure you have the required permissions.\n\nIf the issue persists, contact an admin."
 
@@ -101,31 +103,28 @@ class PunishmentSystem(BaseModule):
         curNum = ""
 
         for char in duration:
-            try:
-                match(char):
-                    case _ if char.isnumeric():
-                        curNum += char
+            match(char):
+                case _ if char.isnumeric():
+                    curNum += char
 
-                    case 'm':
-                        m += int(curNum)
-                    case _ if char.lower() == 'h':
-                        h += int(curNum)
-                    case _ if char.lower() == 'd':
-                        d += int(curNum)
-                    case _ if char.lower() == 'w':
-                        w += int(curNum)
-                    case 'M':
-                        # Timedelta does not support Months, this must be converted manually
-                        w += int(curNum)*4
-                    case 'y':
-                        w += int(curNum)*52
-                    case ' ':
-                        pass
-                    case _:
-                        raise Exception("Could not parse duration")
-            except Exception as e:
-                raise DurationParseError("Could not parse punishment duration from user input")
-
+                case 'm':
+                    m += int(curNum)
+                case _ if char.lower() == 'h':
+                    h += int(curNum)
+                case _ if char.lower() == 'd':
+                    d += int(curNum)
+                case _ if char.lower() == 'w':
+                    w += int(curNum)
+                case 'M':
+                    # Timedelta does not support Months, this must be converted manually
+                    w += int(curNum)*4
+                case 'y':
+                    w += int(curNum)*52
+                case ' ':
+                    pass
+                case _:
+                    raise DurationParseError("Could not parse punishment duration from user input")
+    
             # Reset current number once the value has been added to its respective category
             if (char.isalpha()):
                 curNum = ""

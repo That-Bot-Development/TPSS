@@ -22,5 +22,8 @@ class BaseModule(commands.Cog):
         try:
             return server.get_member(user_id) or await server.fetch_member(user_id)
         except Exception:
-            return None
+            raise MemberNotFoundError("Member could not be found.")
 
+class MemberNotFoundError(Exception):
+    """Thrown when the a discord member cannot be found."""
+    pass

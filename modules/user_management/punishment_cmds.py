@@ -1,7 +1,12 @@
 import discord
 from discord import app_commands
 
+<<<<<<< Updated upstream:modules/user_management/punishment_cmds.py
 from modules.user_management.punishment_system import PunishmentSystem, DurationOutOfBoundsError
+=======
+from modules.base import MemberNotFoundError
+from modules.punishment_system import PunishmentSystem, DurationOutOfBoundsError
+>>>>>>> Stashed changes:modules/punishment_cmds.py
 from modules.util.embed_maker import *
 
 from datetime import *
@@ -21,6 +26,8 @@ class PunishmentCommands(PunishmentSystem):
         pun_type = "warn"
 
         try:
+            member = await self.get_member(user.id)
+
             # Commit to database
             id = None
             id = await self.commit_punishment(
@@ -47,6 +54,8 @@ class PunishmentCommands(PunishmentSystem):
         pun_type = "mute"
 
         try:
+            member = await self.get_member(user.id)
+
             time = await self.duration_str_to_time(duration)
 
             if time > timedelta(days=28) or time < timedelta(0):
@@ -80,6 +89,8 @@ class PunishmentCommands(PunishmentSystem):
         pun_type = "kick"
 
         try:
+            member = await self.get_member(user.id)
+
             # DM must be sent before kicking the user from the server
             await self.send_punishment_dm(member,pun_type,reason)
 
@@ -106,11 +117,14 @@ class PunishmentCommands(PunishmentSystem):
     @app_commands.command(name="ban", description="Bans the specified user.")
     @app_commands.checks.has_role("Staff")
     @app_commands.describe(user="The user to be banned.", reason="The reason for the punishment.", duration="(optional) The length of the punishment. (m = Minutes, h = Hours, d = Days, w = Weeks, M = Months, y = Years)")
-    async def kick(self, interactions: discord.Interaction, user:discord.User, reason:str, duration:str=None):
+    async def ban(self, interactions: discord.Interaction, user:discord.User, reason:str, duration:str=None):
         pun_type = "ban"
         expiry = None
 
-        member = await self.get_member(user.id)
+        try:
+            member = await self.get_member(user.id)
+        except MemberNotFoundError:
+            member = None
 
         try:
             if duration is not None:
@@ -184,7 +198,11 @@ class PunishmentCommands(PunishmentSystem):
     @app_commands.describe(user="The user to be unbanned.")
     async def unban(self, interactions: discord.Interaction, user:discord.User):
         pun_type = "unban"
+<<<<<<< Updated upstream:modules/user_management/punishment_cmds.py
         reason=f"Unbanned by {interactions.user.display_name}"
+=======
+        reason=f"Unbanned by {interactions.user.display_name}."
+>>>>>>> Stashed changes:modules/punishment_cmds.py
 
         try:
             # Remove Discord Ban on this user
@@ -196,6 +214,7 @@ class PunishmentCommands(PunishmentSystem):
                 print("Not banned")
                 pass
 
+            #TODO: Check what exception is thrown if user isnt found here
             # Commit to database
             id = None
             id = await self.commit_punishment(
@@ -208,6 +227,11 @@ class PunishmentCommands(PunishmentSystem):
         except Exception as e:
             await self.create_punishment_err(interactions,pun_type,e)
             return
+<<<<<<< Updated upstream:modules/user_management/punishment_cmds.py
 
         await self.send_punishment_response(interactions,user,pun_type,id,reason)
         await self.to_punishment_logs(user,pun_type,id,reason)
+=======
+        #FIXME No member to provide here... can be fixed by splitting up the parts of this function
+        await self.respond_and_log_punishment(interactions,(pun_type,id),member,None,reason)
+>>>>>>> Stashed changes:modules/punishment_cmds.py
