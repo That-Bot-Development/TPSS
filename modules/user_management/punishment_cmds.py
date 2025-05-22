@@ -1,12 +1,7 @@
 import discord
 from discord import app_commands
 
-<<<<<<< Updated upstream:modules/user_management/punishment_cmds.py
 from modules.user_management.punishment_system import PunishmentSystem, DurationOutOfBoundsError
-=======
-from modules.base import MemberNotFoundError
-from modules.punishment_system import PunishmentSystem, DurationOutOfBoundsError
->>>>>>> Stashed changes:modules/punishment_cmds.py
 from modules.util.embed_maker import *
 
 from datetime import *
