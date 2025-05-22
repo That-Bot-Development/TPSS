@@ -39,7 +39,7 @@ class PunishmentCaseCommands(PunishmentSystem):
                     lines = []
                     for row in results:
                         date = datetime.strptime(str(row['IssuedAt']),"%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y")
-                        lines.append(f"**Case #{row['CaseNo']}** - {row['Type']}\n{row['Reason']}\n-# {date})")
+                        lines.append(f"**Case #{row['CaseNo']}** - {row['Type']}\n{row['Reason']}\n-# {date}")
                     message = "\n\n".join(lines)
                 else:
                     message = "*No cases found.*"
