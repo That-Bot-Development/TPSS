@@ -55,6 +55,7 @@ class PunishmentCommands(PunishmentSystem):
 
             # Issue a Discord Timeout on this user
             await member.timeout(time,reason=reason)
+            print(member.timed_out_until)
 
             # Commit to database
             id = None

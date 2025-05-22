@@ -50,7 +50,7 @@ class PunishmentCaseCommands(PunishmentSystem):
         if any(role.name == "Staff" for role in interactions.user.roles) and interactions.channel.id == 578725402638286879:
 
             try:
-                notes = self.staff_notes.get_notes(user.id,small=True)
+                notes = self.staff_notes.get_notes(user.id)
                 message += f"\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n<:note:1374949963825680484> **Notes**\n\n{notes}" if notes else "\n\n<:note:1374949963825680484> *No notes found.*"
             except Exception as e:
                 print(f"Exception occured in 'list notes (external)' operation: {e}")
