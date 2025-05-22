@@ -47,22 +47,24 @@ class PunishmentCaseCommands(PunishmentSystem):
             await self.create_punishment_err(interactions,"list punishments",e)
             return
         
-        
-        try:
-            notes = self.staff_notes.get_notes(user.id,small=True)
-            message += f"\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n<:note:1374949963825680484> **Notes**\n\n{notes}" if notes else "\n\n<:note:1374949963825680484> *No notes found.*"
-        except Exception as e:
-            print(f"Exception occured in 'list notes (external)' operation: {e}")
+        if any(role.name == "Staff" for role in interactions.user.roles) and interactions.channel.id == 578725402638286879:
 
-            message += "\n\n-# <:alert:1346654360012329044> Notes could not be loaded."
+            try:
+                notes = self.staff_notes.get_notes(user.id,small=True)
+                message += f"\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n<:note:1374949963825680484> **Notes**\n\n{notes}" if notes else "\n\n<:note:1374949963825680484> *No notes found.*"
+            except Exception as e:
+                print(f"Exception occured in 'list notes (external)' operation: {e}")
 
-        await interactions.response.send_message(embed=EmbedMaker(
-            embed_type=EmbedType.USER_MANAGEMENT,
-            title=f"Punishments: {self.truncate_string(user.display_name)}",
-            message=message
-        ).create())
+                message += "\n\n-# <:alert:1346654360012329044> Notes could not be loaded."
+
+            await interactions.response.send_message(embed=EmbedMaker(
+                embed_type=EmbedType.USER_MANAGEMENT,
+                title=f"Punishments: {self.truncate_string(user.display_name)}",
+                message=message
+            ).create())
 
     @app_commands.command(name="case", description="View a specific punishment case.")
+    @app_commands.checks.has_role("Staff")
     @app_commands.describe(case="The case number.")
     async def case(self, interactions: discord.Interaction, case:app_commands.Range[int, 1, 999999]):        
         try:
