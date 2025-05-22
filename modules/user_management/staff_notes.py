@@ -57,10 +57,12 @@ class StaffNotes(BaseModule):
             message = ""
             noteId = 1
 
+            lines = []
             for row in results:
                 if small: message += "-# "
-                message += f"**#{noteId}** - {row['Note']}\n\n"
+                lines.append(f"**#{noteId}** - {row['Note']}")
                 noteId += 1
+            message = "\n\n".join(lines)
         else:
             return None
 

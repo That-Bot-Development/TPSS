@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands;
+from discord.ext import commands
 
 from modules.util.sql_manager import SQLManager
 from modules.util.discord_const import DiscordConstants
