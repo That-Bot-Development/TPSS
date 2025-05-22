@@ -1,5 +1,6 @@
 import discord
 from discord import app_commands
+from discord.ext import commands
 
 from modules.user_management.punishment_system import PunishmentSystem
 from modules.user_management.staff_notes import StaffNotes
@@ -14,7 +15,8 @@ class PunishmentCaseCommands(PunishmentSystem):
         self.client = client #TODO this is redundant, done in base class... use super().__init__(client)
         self.staff_notes = None
 
-    async def cog_load(self):
+    @commands.Cog.listener
+    async def on_ready(self):
         cog = self.client.get_cog("StaffNotes")
         if isinstance(cog, StaffNotes):
             self.staff_notes: StaffNotes = cog
