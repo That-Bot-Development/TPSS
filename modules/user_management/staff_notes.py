@@ -58,7 +58,7 @@ class StaffNotes(BaseModule):
             noteId = 1
 
             for row in results:
-                if small: message += "-#"
+                if small: message += "-# "
                 message += f"**#{noteId}** - {row['Note']}\n\n"
                 noteId += 1
         else:

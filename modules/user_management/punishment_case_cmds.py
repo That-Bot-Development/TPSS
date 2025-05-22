@@ -36,8 +36,11 @@ class PunishmentCaseCommands(PunishmentSystem):
                 results = self.sql.execute_query("SELECT * FROM Punishments WHERE UserID = %s",(user.id,),connection=connection,handle_except=False)
 
                 if results:
+                    lines = []
                     for row in results:
-                        message += f"**Case #{row['CaseNo']}** - {row['Type']}\n{row['Reason']}\n-# {datetime.strptime(str(row['IssuedAt']),"%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y")}\n\n"
+                        date = datetime.strptime(str(row['IssuedAt']),"%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y")
+                        lines.append(f"**Case #{row['CaseNo']}** - {row['Type']}\n{row['Reason']}\n-# {date})")
+                    message = "\n\n".join(lines)
                 else:
                     message = "*No cases found.*"
         except Exception as e:
@@ -51,7 +54,7 @@ class PunishmentCaseCommands(PunishmentSystem):
         except Exception as e:
             print(f"Exception occured in 'list notes (external)' operation: {e}")
 
-            message += "\n-# <:alert:1346654360012329044> Notes could not be loaded."
+            message += "\n\n-# <:alert:1346654360012329044> Notes could not be loaded."
 
         await interactions.response.send_message(embed=EmbedMaker(
             embed_type=EmbedType.USER_MANAGEMENT,
