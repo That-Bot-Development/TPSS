@@ -47,7 +47,7 @@ class StaffNotes(BaseModule):
             message=f"**Added to {self.truncate_string(user.display_name)}**: {str(note)}"
         ).create())
 
-    def get_notes(self, user_id:int) -> str:
+    def get_notes(self, user_id:int, small:bool=False) -> str:
         with self.sql.get_connection() as connection:
             results = self.sql.execute_query("""
                 SELECT Note FROM UserNotes WHERE UserID = %s ORDER BY IssuedAt DESC
@@ -58,6 +58,7 @@ class StaffNotes(BaseModule):
             noteId = 1
 
             for row in results:
+                if small: message += "-#"
                 message += f"**#{noteId}** - {row['Note']}\n\n"
                 noteId += 1
         else:
