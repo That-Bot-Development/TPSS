@@ -12,7 +12,7 @@ class StaffNotes(BaseModule):
 
     @app_commands.command(name="notes", description="View staff notes on a user.")
     @app_commands.checks.has_role("Staff")
-    @app_commands.describe(member="The member to view notes on.")
+    @app_commands.describe(user="The member to view notes on.")
     async def notes(self, interactions: discord.Interaction, user:discord.User):
         try:
             notes = self.get_notes(user.id)
@@ -28,7 +28,7 @@ class StaffNotes(BaseModule):
     
     @app_commands.command(name="addnote", description="Adds a staff note on a user.")
     @app_commands.checks.has_role("Staff")
-    @app_commands.describe(member="The member to add the note to.", note="The note.")
+    @app_commands.describe(user="The member to add the note to.", note="The note.")
     async def addnote(self, interactions: discord.Interaction, user:discord.User, note:str):
         try:
             with self.sql.get_connection() as connection:
