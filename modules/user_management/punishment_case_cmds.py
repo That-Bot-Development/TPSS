@@ -15,7 +15,7 @@ class PunishmentCaseCommands(PunishmentSystem):
         self.client = client #TODO this is redundant, done in base class... use super().__init__(client)
         self.staff_notes = None
 
-    @commands.Cog.listener
+    @commands.Cog.listener()
     async def on_ready(self):
         cog = self.client.get_cog("StaffNotes")
         if isinstance(cog, StaffNotes):
