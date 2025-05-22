@@ -47,12 +47,12 @@ class PunishmentCaseCommands(PunishmentSystem):
         
         try:
             notes = self.staff_notes.get_notes(user.id)
-            message += f"\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n**Notes**\n-# {notes}" if notes else "*No notes found.*"
+            message += f"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n**Notes**\n\n-# {notes}" if notes else "*No notes found.*"
         except Exception as e:
             print(f"Exception occured in 'list notes (external)' operation: {e}")
             traceback.print_exc()
 
-            message += "\n-# <:alert:1346654360012329044> Notes could not be loaded."
+            message += "-# <:alert:1346654360012329044> Notes could not be loaded."
 
         await interactions.response.send_message(embed=EmbedMaker(
             embed_type=EmbedType.USER_MANAGEMENT,
