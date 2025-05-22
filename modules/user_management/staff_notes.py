@@ -13,30 +13,30 @@ class StaffNotes(BaseModule):
     @app_commands.command(name="notes", description="View staff notes on a user.")
     @app_commands.checks.has_role("Staff")
     @app_commands.describe(member="The member to view notes on.")
-    async def notes(self, interactions: discord.Interaction, member:discord.Member):
+    async def notes(self, interactions: discord.Interaction, user:discord.User):
         try:
-            notes = self.get_notes(member.id)
+            notes = self.get_notes(user.id)
         except Exception as e:
             await self.create_note_err(interactions,"list notes",e)
 
         await interactions.response.send_message(embed=EmbedMaker(
             embed_type=EmbedType.USER_MANAGEMENT,
-            title=f"Notes: {self.truncate_string(member.name)}",
-            message=notes
+            title=f"Notes: {self.truncate_string(user.display_name)}",
+            message= notes if notes else "*No notes found.*"
         ).create())
     
     
     @app_commands.command(name="addnote", description="Adds a staff note on a user.")
     @app_commands.checks.has_role("Staff")
     @app_commands.describe(member="The member to add the note to.", note="The note.")
-    async def addnote(self, interactions: discord.Interaction, member:discord.Member, note:str):
+    async def addnote(self, interactions: discord.Interaction, user:discord.User, note:str):
         try:
             with self.sql.get_connection() as connection:
 
                 self.sql.execute_query("""
                     INSERT INTO UserNotes (UserID, Note, IssuedByID) 
                     VALUES (%s,%s,%s)
-                """,(member.id,note,interactions.user.id),connection=connection,handle_except=False)
+                """,(user.id,note,interactions.user.id),connection=connection,handle_except=False)
 
         except Exception as e:
             self.create_note_err(interactions,"add note",e)
@@ -44,7 +44,7 @@ class StaffNotes(BaseModule):
         await interactions.response.send_message(embed=EmbedMaker(
             embed_type=EmbedType.USER_MANAGEMENT,
             title=f"<:check:1346601762882326700> Note Added",
-            message=str(note)
+            message=f"**Added to {self.truncate_string(user.display_name)}**: {str(note)}"
         ).create())
 
     def get_notes(self, user_id:int) -> str:
@@ -58,10 +58,10 @@ class StaffNotes(BaseModule):
             noteId = 1
 
             for row in results:
-                message += f"**Note #{noteId}** - {row['Note']}\n\n"
+                message += f"**#{noteId}** - {row['Note']}\n\n"
                 noteId += 1
         else:
-            message = "*No notes found.*"
+            return None
 
         return message
         

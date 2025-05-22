@@ -1,6 +1,7 @@
 import discord
 from discord import app_commands
 
+from modules.base import MemberNotFoundError
 from modules.user_management.punishment_system import PunishmentSystem, DurationOutOfBoundsError
 from modules.util.embed_maker import *
 
@@ -21,8 +22,6 @@ class PunishmentCommands(PunishmentSystem):
         pun_type = "warn"
 
         try:
-            member = await self.get_member(user.id)
-
             # Commit to database
             id = None
             id = await self.commit_punishment(
@@ -49,8 +48,6 @@ class PunishmentCommands(PunishmentSystem):
         pun_type = "mute"
 
         try:
-            member = await self.get_member(user.id)
-
             time = await self.duration_str_to_time(duration)
 
             if time > timedelta(days=28) or time < timedelta(0):
@@ -84,8 +81,6 @@ class PunishmentCommands(PunishmentSystem):
         pun_type = "kick"
 
         try:
-            member = await self.get_member(user.id)
-
             # DM must be sent before kicking the user from the server
             await self.send_punishment_dm(member,pun_type,reason)
 

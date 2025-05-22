@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 
 from modules.user_management.punishment_system import PunishmentSystem
+from modules.user_management.staff_notes import StaffNotes
 from modules.util.embed_maker import *
 
 import traceback
@@ -9,6 +10,15 @@ from datetime import *
 
 
 class PunishmentCaseCommands(PunishmentSystem):
+    def __init__(self):
+        self.staff_notes = None
+
+    async def cog_load(self):
+        cog = self.client.get_cog("StaffNotes")
+        if isinstance(cog, StaffNotes):
+            self.staff_notes: StaffNotes = cog
+
+
     @app_commands.command(name="punishments", description="Lists all punishment cases for the specified user.")
     @app_commands.describe(user="The user to check punishments on.")
     async def punishments(self, interactions: discord.Interaction, user:discord.User=None):
@@ -30,10 +40,18 @@ class PunishmentCaseCommands(PunishmentSystem):
         except Exception as e:
             await self.create_punishment_err(interactions,"list punishments",e)
             return
+        
+        
+        try:
+            notes = self.staff_notes.get_notes(user.id)
+            message += f"\n\n**Notes**\n-# {notes}" if notes else "*No notes found.*"
+        except Exception as e:
+            print(f"Exception occured in 'list notes (external)' operation: {e}")
+            message += "\n\n-# <:alert:1346654360012329044> Notes could not be loaded"
 
         await interactions.response.send_message(embed=EmbedMaker(
             embed_type=EmbedType.USER_MANAGEMENT,
-            title=f"Punishments: {self.truncate_string(user.name)}",
+            title=f"Punishments: {self.truncate_string(user.display_name)}",
             message=message
         ).create())
 
@@ -48,7 +66,7 @@ class PunishmentCaseCommands(PunishmentSystem):
                 # Sub-header
                 user = await self.client.fetch_user(results[0]['UserID'])
                 if user is not None:
-                    subheader = f"**{user.name}** ({user.id})"
+                    subheader = f"**{user.display_name}** ({user.id})"
                 else:
                     subheader = f"**Unknown** ({results[0]['UserID']})"
                 subheader += f" - {results[0]['Type']}"
