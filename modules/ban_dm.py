@@ -24,4 +24,4 @@ class BanDM(BaseModule):
 
         # DEPRECATION ALERT
         elif ".punishments" in message.content and not message.author.bot:
-            await message.channel.send(EmbedMaker(embed_type=EmbedType.MISC,title="<:alert:1346654360012329044> Deprecated command!",message="The `.punishments` command is no longer updated with the most recent punishment logs and will soon be retired.\nPlease use `/punishments` instead!").create())
+            await message.channel.send(embed=EmbedMaker(embed_type=EmbedType.MISC,title="<:alert:1346654360012329044> Deprecated command!",message="The `.punishments` command is no longer updated with the most recent punishment logs and will soon be retired.\nPlease use `/punishments` instead!").create())
