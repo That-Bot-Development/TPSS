@@ -15,7 +15,7 @@ class PunishmentCommands(PunishmentSystem):
 
     @app_commands.command(name="warn", description="Warns the specified member.")
     @app_commands.checks.has_role("Staff")
-    @app_commands.describe(member="The member to be warned.", reason="The reason for the punishment.")
+    @app_commands.describe(user="The member to be warned.", reason="The reason for the punishment.")
     async def warn(self, interactions: discord.Interaction, user:discord.User, reason:str):
         if not interactions.user.guild_permissions.moderate_members:
             return
@@ -53,7 +53,7 @@ class PunishmentCommands(PunishmentSystem):
     # TODO: Check on incorrect dates in DB, see pinned
     @app_commands.command(name="mute", description="Mutes the specified member.")
     @app_commands.checks.has_role("Staff")
-    @app_commands.describe(member="The member to be muted.", reason="The reason for the punishment.", duration="The length of the punishment. (m = Minutes, h = Hours, d = Days, w = Weeks)")
+    @app_commands.describe(user="The member to be muted.", reason="The reason for the punishment.", duration="The length of the punishment. (m = Minutes, h = Hours, d = Days, w = Weeks)")
     async def mute(self, interactions: discord.Interaction, user:discord.User, reason:str, duration:str):
         pun_type = "mute"
 
@@ -94,7 +94,7 @@ class PunishmentCommands(PunishmentSystem):
 
     @app_commands.command(name="kick", description="Kicks the specified member.")
     @app_commands.checks.has_role("Staff")
-    @app_commands.describe(member="The member to be kicked.", reason="The reason for the punishment.")
+    @app_commands.describe(user="The member to be kicked.", reason="The reason for the punishment.")
     async def kick(self, interactions: discord.Interaction, user:discord.User, reason:str):
         pun_type = "kick"
 
@@ -187,12 +187,15 @@ class PunishmentCommands(PunishmentSystem):
 
     @app_commands.command(name="unmute", description="Unmutes the specified user.")
     @app_commands.checks.has_role("Staff")
-    @app_commands.describe(member="The member to be unmuted.")
-    async def unmute(self, interactions: discord.Interaction, member:discord.Member):
+    @app_commands.describe(user="The member to be unmuted.")
+    async def unmute(self, interactions: discord.Interaction, user:discord.User):
         pun_type = "unmute"
         reason=f"Unmuted by {interactions.user.display_name}."
 
         try:
+            # User MUST be a member of the server
+            member = await self.get_member(user.id)
+
             if interactions.user.id == member.id:
                 raise SelfPunishError(interactions.user,pun_type)
 
