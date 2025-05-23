@@ -5,6 +5,7 @@ from discord.ext import commands
 from modules.user_management.punishment_system import PunishmentSystem
 from modules.user_management.staff_notes import StaffNotes
 from modules.util.embed_maker import *
+from modules.util.exceptions import NotFoundError
 
 import traceback
 from datetime import *
@@ -126,8 +127,7 @@ class PunishmentCaseCommands(PunishmentSystem):
                     title=f"<:check:1346601762882326700> Case #{case} Removed"
                     message=f"**Case #{case}** has successfully been removed from the record."
                 else:
-                    title = f"Case #{case}"        #TODO: make error? (prolly yea, maybe have it a normal message still though idk)            
-                    message = "*Case not found.*"
+                    raise NotFoundError(f"Punishment case #{case} could not be found.")
         except Exception as e:
             await self.create_punishment_err(interactions,"delete punishment",e)
             return

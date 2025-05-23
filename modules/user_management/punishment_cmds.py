@@ -2,8 +2,9 @@ import discord
 from discord import app_commands
 
 from modules.base import MemberNotFoundError
-from modules.user_management.punishment_system import PunishmentSystem, DurationOutOfBoundsError, SelfPunishError
+from modules.user_management.punishment_system import PunishmentSystem, SelfPunishError
 from modules.util.embed_maker import *
+from modules.util.exceptions import DurationOutOfBoundsError
 
 from datetime import *
 

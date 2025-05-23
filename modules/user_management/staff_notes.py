@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 
 from modules.util.embed_maker import *
+from modules.util.exceptions import NotFoundError
 
 from datetime import *
 from mysql.connector import Error as sql_error
@@ -18,6 +19,7 @@ class StaffNotes(BaseModule):
             notes = self.get_notes(user.id)
         except Exception as e:
             await self.create_note_err(interactions,"list notes",e)
+            return
 
         await interactions.response.send_message(embed=EmbedMaker(
             embed_type=EmbedType.USER_MANAGEMENT,
@@ -40,6 +42,7 @@ class StaffNotes(BaseModule):
 
         except Exception as e:
             self.create_note_err(interactions,"add note",e)
+            return
 
         await interactions.response.send_message(embed=EmbedMaker(
             embed_type=EmbedType.USER_MANAGEMENT,
@@ -70,23 +73,18 @@ class StaffNotes(BaseModule):
                         DELETE FROM UserNotes
                         WHERE NoteID = %s
                     """, (note_id,), connection=connection, handle_except=False)
-                    removed = True
+                else:
+                    raise NotFoundError(f"Could not find note #{id} for {user.display_name}.")                    
 
         except Exception as e:
             self.create_note_err(interactions,"remove note",e)
+            return
 
-        if removed:
-            await interactions.response.send_message(embed=EmbedMaker(
-                embed_type=EmbedType.USER_MANAGEMENT,
-                title=f"<:check:1346601762882326700> Note Removed",
-                message=f"**Removed from {user.display_name}**: {result[0]["Note"]}"
-            ).create())
-        else:
-            await interactions.response.send_message(embed=EmbedMaker(
-                embed_type=EmbedType.USER_MANAGEMENT,
-                title=f"<:red_x:1375256127993806951> Note Not Found",
-                message=f"Could not find note #{id} for {user.display_name}."
-            ).create())
+        await interactions.response.send_message(embed=EmbedMaker(
+            embed_type=EmbedType.USER_MANAGEMENT,
+            title=f"<:check:1346601762882326700> Note Removed",
+            message=f"**Removed from {user.display_name}**: {result[0]["Note"]}"
+        ).create())
 
     def get_notes(self, user_id:int) -> str:
         with self.sql.get_connection() as connection:
@@ -111,6 +109,8 @@ class StaffNotes(BaseModule):
     async def create_note_err(self, interactions:discord.Interaction, action:str, e:Exception):
         if isinstance(e, sql_error):
             message = "Unable to reach the database.\n\nIf the issue persists, contact an admin."
+        elif isinstance(e, NotFoundError):
+            message = str(e)
         else:
             message = "This action could not be completed.\nPlease ensure you have the required permissions.\n\nIf the issue persists, contact an admin."
 

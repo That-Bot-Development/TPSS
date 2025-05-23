@@ -3,6 +3,7 @@ from discord.ext import tasks, commands
 
 from modules.base import BaseModule, MemberNotFoundError
 from modules.util.embed_maker import *
+from modules.util.exceptions import *
 
 from datetime import *
 from mysql.connector import Error as sql_error
@@ -33,6 +34,8 @@ class PunishmentSystem(BaseModule):
             message = str(e)
         elif isinstance(e,MemberNotFoundError):
             message = "This member could not be found.\nPlease ensure you entered the correct information.\nThis command will not work if the user is no longer in the server."
+        elif isinstance(e,NotFoundError):
+            message = str(e)
         elif isinstance(e,SelfPunishError):
             message = "You tried to punish yourself. Genius stuff."
         else:
@@ -198,14 +201,6 @@ class ExpiredPunishmentManager(PunishmentSystem):
                     except Exception:
                         pass                
             
-class DurationParseError(Exception):
-    """Thrown when punishment duration cannot be parsed from user input."""
-    pass
-
-class DurationOutOfBoundsError(Exception):
-    """Thrown when the specified duration is out of bounds for the given context."""
-    pass
-
 class SelfPunishError(Exception):
     """Thrown when a user attempts to issue a punishment on themselves."""
     
