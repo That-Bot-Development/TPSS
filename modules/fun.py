@@ -44,7 +44,7 @@ class Cat(BaseModule):
     @app_commands.command(name="cat", description="Provides cat.")
     @app_commands.describe(filter="Filter what type of cat you would like provided.")
     async def cat(self, interaction: discord.Interaction, filter:str=None):
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer()
 
         try:
             if filter == None:
@@ -78,9 +78,9 @@ class Cat(BaseModule):
 
         except Exception as e:
             print(f"Exception occured in 'cat' operation: {e}")
-            await interactions.response.send_message(embed=EmbedMaker(
+            await interaction.response.send_message(embed=EmbedMaker(
                 embed_type=EmbedType.MISC,
                 message="This likely means the [CatAAS API](https://cataas.com/) is down.\n\nContact an Admin if you believe this is a mistake.",
                 error=True
-            ).create(),ephemeral=True,delete_after=20)
+            ).create(),ephemeral=True) # FIXME: This is inconsistent! Other error messages can delete after 20s, cannot due to deferring...
         
