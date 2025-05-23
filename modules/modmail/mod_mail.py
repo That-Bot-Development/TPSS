@@ -12,7 +12,7 @@ class ModMail(BaseModule):
     def __init__(self, client):
         self.client = client
 
-    async def start_persistent_interactions(self):
+    async def start_persistent_interactions(self): # TODO: This really shouldn't be in this file, also there is possibly better ways to do this
         '''Function to start all interactions that should resume function on startup.'''
         await self.ticket_creator()
 
@@ -26,26 +26,36 @@ class ModMail(BaseModule):
                         return thread
         return None
 
-    async def create_ticket(self, interaction:discord.Interaction,tt_data):
+    async def create_ticket(self, interaction:discord.Interaction, ticket_data, reported_message:discord.Message=None):
         active_ticket = await self.get_ticket(interaction.user)
         if active_ticket is None:
-            tt_ticket_data = tt_data["ticketdata"]
 
             new_ticket = await self.d_consts.CHANNEL_MODMAIL.create_thread(name=interaction.user.display_name,reason=f"Mod Mail ticket created by {interaction.user.display_name}")
             await new_ticket.edit(invitable=False)
-            msg:discord.Message = await new_ticket.send(f"<@&{tt_ticket_data[0]}> {self.d_consts.ROLE_COREBOTS.mention} {interaction.user.mention}")
-            if tt_ticket_data[0] != self.d_consts.ROLE_ADMIN.id:
+            msg:discord.Message = await new_ticket.send(f"<@&{ticket_data[0]}> {self.d_consts.ROLE_COREBOTS.mention} {interaction.user.mention}")
+            if ticket_data[0] != self.d_consts.ROLE_ADMIN.id:
                 await msg.edit(content=f"{self.d_consts.ROLE_MOD.mention} {self.d_consts.ROLE_ADMIN.mention} {self.d_consts.ROLE_OWNER.mention}")
             await msg.edit(content="",embed=EmbedMaker(
                 embed_type=EmbedType.MOD_MAIL,
-                title=f"{str(tt_ticket_data[1]).title()} Ticket",
-                message=f"New {tt_ticket_data[1]} ticket from **{interaction.user.display_name}**.\n\n-# Staff can close the ticket with `/close`."
+                title=f"{str(ticket_data[1]).title()} Ticket",
+                message=f"New {ticket_data[1]} ticket from **{interaction.user.display_name}**.\n\n-# Staff can close the ticket with `/close`."
             ).create())
+
+            if reported_message:
+                await new_ticket.send(embed=EmbedMaker(
+                    embed_type=EmbedType.MOD_MAIL,
+                    title="Reported Message",
+                    message=f"""
+                        **{reported_message.author}**:
+                        {reported_message.content}
+                        Jump: https://discord.com/channels/{reported_message.guild.id}/{reported_message.channel.id}/{reported_message.id}
+                    """
+                ).create())
 
             await interaction.response.send_message(embed=EmbedMaker(
                 embed_type=EmbedType.MOD_MAIL,
                 title="Ticket Created",
-                message=f"Your {tt_ticket_data[1]} ticket has been created! You can find it and send your {tt_ticket_data[1]} here: <#{new_ticket.id}>"
+                message=f"Your {ticket_data[1]} ticket has been created! You can find it and send your {ticket_data[1]} here: <#{new_ticket.id}>"
             ).create(),ephemeral=True,delete_after=120)
         else:
             await interaction.response.send_message(embed=EmbedMaker(
@@ -56,20 +66,19 @@ class ModMail(BaseModule):
 
     async def get_ticket_type_data(self, select):
         '''Function to get data for the ticket type selection.'''
-        match select.values[0]:
-            case "Report a Member":
-                data = [ReportMember.SELECT_DATA,ReportMember.TICKET_DATA]
-            case "State a Question or Concern":
-                data = [StateQuestionConcern.SELECT_DATA,StateQuestionConcern.TICKET_DATA]
-            case "Suggest a Poll":
-                data = [SuggestPoll.SELECT_DATA,SuggestPoll.TICKET_DATA]
-            case "Report a Mod":
-                data = [ReportMod.SELECT_DATA,ReportMod.TICKET_DATA]
-            case "Report an Event Manager":
-                data = [ReportEventManager.SELECT_DATA,ReportEventManager.TICKET_DATA]
-            case "Other":
-                data = [Other.SELECT_DATA,Other.TICKET_DATA]
-        return {"selectdata":data[0],"ticketdata":data[1]}
+        if select == ReportMember.SELECT_DATA[0]:
+            data = ReportMember.TICKET_DATA
+        elif select == StateQuestionConcern.SELECT_DATA[0]:
+            data = StateQuestionConcern.TICKET_DATA
+        elif select == SuggestPoll.SELECT_DATA[0]:
+            data = SuggestPoll.TICKET_DATA
+        elif select == ReportMod.SELECT_DATA[0]:
+            data = ReportMod.TICKET_DATA
+        elif select == ReportEventManager.SELECT_DATA[0]:
+            data = ReportEventManager.TICKET_DATA
+        elif select == Other.SELECT_DATA[0]:
+            data = Other.TICKET_DATA
+        return data
 
     async def ticket_creator(self):
         mm_select = Select(
@@ -103,8 +112,8 @@ class ModMail(BaseModule):
         )
 
         async def callback(interaction):
-            tt_data = await self.get_ticket_type_data(mm_select)
-            await self.create_ticket(interaction,tt_data)
+            ticket_data = await self.get_ticket_type_data(mm_select)
+            await self.create_ticket(interaction,ticket_data)
 
         mm_select.callback = callback
 
