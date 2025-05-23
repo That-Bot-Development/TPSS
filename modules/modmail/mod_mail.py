@@ -60,13 +60,13 @@ class ModMail(BaseModule):
                 embed_type=EmbedType.MOD_MAIL,
                 title="Ticket Created",
                 message=f"Your {ticket_data[1]} ticket has been created! You can find it and send your {ticket_data[1]} here: <#{new_ticket.id}>"
-            ).create(),ephemeral=True,delete_after=120)
+            ).create(),ephemeral=True)
         else:
             await interaction.followup.send_message(embed=EmbedMaker(
                 embed_type=EmbedType.MOD_MAIL,
                 message=f"You already have an active ticket! You can find it here: <#{active_ticket.id}>",
                 error=True
-            ).create(),ephemeral=True,delete_after=120)
+            ).create(),ephemeral=True)
 
 
     TICKET_DATA_MAP = {
