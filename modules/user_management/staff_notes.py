@@ -47,15 +47,13 @@ class StaffNotes(BaseModule):
         await interactions.response.send_message(embed=EmbedMaker(
             embed_type=EmbedType.USER_MANAGEMENT,
             title=f"<:check:1346601762882326700> Note Added",
-            message=f"**Added to {user.display_name}**: {str(note)}"
+            message=f"**Added to {user.display_name}**: {note}"
         ).create())
 
     @app_commands.command(name="removenote", description="Removes a staff note on a user.")
     @app_commands.checks.has_role("Staff")
     @app_commands.describe(user="The member to remove the note from.", id="The Note # to remove.")
     async def removenote(self, interactions: discord.Interaction, user:discord.User, id:app_commands.Range[int, 1, 999]):
-        removed = False
-        
         try:
             with self.sql.get_connection() as connection:
 
@@ -84,6 +82,41 @@ class StaffNotes(BaseModule):
             embed_type=EmbedType.USER_MANAGEMENT,
             title=f"<:check:1346601762882326700> Note Removed",
             message=f"**Removed from {user.display_name}**: {result[0]["Note"]}"
+        ).create())
+
+    @app_commands.command(name="editnote", description="Edits a staff note on a user.")
+    @app_commands.checks.has_role("Staff")
+    @app_commands.describe(user="The member to edit the note on.", id="The Note # to edit.", note="The updated note.")
+    async def editnote(self, interactions: discord.Interaction, user:discord.User, id:app_commands.Range[int, 1, 999], note:str):
+        try:
+            with self.sql.get_connection() as connection:
+
+                result = self.sql.execute_query("""
+                    SELECT * FROM UserNotes
+                    WHERE UserID = %s
+                    ORDER BY IssuedAt DESC
+                    LIMIT 1 OFFSET %s
+                """,(user.id,id-1),connection=connection,handle_except=False)
+
+                if result and len(result) > 0:
+                    note_id = result[0]["NoteID"]
+
+                    self.sql.execute_query("""
+                        UPDATE UserNotes
+                        SET Note = %s
+                        WHERE NoteID = %s
+                    """, (note, note_id), connection=connection, handle_except=False)
+                else:
+                    raise NotFoundError(f"Could not find note #{id} for {user.display_name}.")                    
+
+        except Exception as e:
+            await self.create_note_err(interactions,"edit note",e)
+            return
+
+        await interactions.response.send_message(embed=EmbedMaker(
+            embed_type=EmbedType.USER_MANAGEMENT,
+            title=f"<:check:1346601762882326700> Note Edited",
+            message=f"**Edited on {user.display_name}**: {note}"
         ).create())
 
     def get_notes(self, user_id:int) -> str:
