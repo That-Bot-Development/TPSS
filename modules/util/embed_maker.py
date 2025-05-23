@@ -12,7 +12,7 @@ class EmbedType(Enum):
     ACTIVITY_LOG = 2
     MISC = 3
 
-class EmbedMaker(BaseModule):
+class EmbedMaker(BaseModule): # NOTE: Does this need to be a cog?
     def __init__(self, embed_type:EmbedType, message:str, title:str="", image_url:str="", error:bool=False):
         #self.client = client
         self.embed_type = embed_type

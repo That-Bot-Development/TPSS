@@ -11,7 +11,6 @@ import modules.util.sql_manager as sql
 # Modules
 import modules.base as base
 import modules.modmail.mod_mail as mm
-import modules.modmail.report_msg as rm
 import modules.ban_dm as bd
 import modules.suggestion_manager as sm
 import modules.art_manager as am
@@ -53,8 +52,9 @@ async def init_cogs():
 
     # Initialize cogs TODO: Rework this at some point (and above)
     if not debug:
+        await client.load_extension("modules.modmail.report_msg")
+
         await client.add_cog(mm.ModMail(client))
-        await client.add_cog(rm.ReportMessage(client))
         await client.add_cog(bd.BanDM(client))
         await client.add_cog(sm.SuggestionManager(client))
         await client.add_cog(am.ArtManager(client))
