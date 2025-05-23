@@ -100,7 +100,7 @@ class PunishmentCaseCommands(PunishmentSystem):
                 title = f"Case #{results[0]['CaseNo']}"
             else:
                 title = f"Case #{case}"
-                message = "*No cases found.*" #TODO: make an error?
+                message = "*Case not found.*" #TODO: make an error?
 
             await interactions.response.send_message(embed=EmbedMaker(
                 embed_type=EmbedType.USER_MANAGEMENT,

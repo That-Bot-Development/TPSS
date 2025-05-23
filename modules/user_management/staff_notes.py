@@ -44,8 +44,49 @@ class StaffNotes(BaseModule):
         await interactions.response.send_message(embed=EmbedMaker(
             embed_type=EmbedType.USER_MANAGEMENT,
             title=f"<:check:1346601762882326700> Note Added",
-            message=f"**Added to {self.truncate_string(user.display_name)}**: {str(note)}"
+            message=f"**Added to {user.display_name}**: {str(note)}"
         ).create())
+
+    @app_commands.command(name="removenote", description="Removes a staff note on a user.")
+    @app_commands.checks.has_role("Staff")
+    @app_commands.describe(user="The member to add the note to.", note="The note.")
+    async def addnote(self, interactions: discord.Interaction, user:discord.User, id:app_commands.Range[int, 1, 999]):
+        removed = False
+        
+        try:
+            with self.sql.get_connection() as connection:
+
+                result = self.sql.execute_query("""
+                    SELECT * FROM UserNotes
+                    WHERE UserID = %s
+                    ORDER BY IssuedAt DESC
+                    LIMIT 1 OFFSET %s
+                """,(user.id,id-1),connection=connection,handle_except=False)
+
+                if result and len(result) > 0:
+                    note_id = result[0]["NoteID"]
+
+                    self.sql.execute_query("""
+                        DELETE FROM UserNotes
+                        WHERE NoteID = %s
+                    """, (note_id,), connection=connection, handle_except=False)
+                    removed = True
+
+        except Exception as e:
+            self.create_note_err(interactions,"remove note",e)
+
+        if removed:
+            await interactions.response.send_message(embed=EmbedMaker(
+                embed_type=EmbedType.USER_MANAGEMENT,
+                title=f"<:check:1346601762882326700> Note Removed",
+                message=f"**Removed from {user.display_name}**: {result[0]["Note"]}"
+            ).create())
+        else:
+            await interactions.response.send_message(embed=EmbedMaker(
+                embed_type=EmbedType.USER_MANAGEMENT,
+                title=f"<:red_x:1375256127993806951> Note Not Found",
+                message=f"Could not find note #{id} for {user.display_name}."
+            ).create())
 
     def get_notes(self, user_id:int) -> str:
         with self.sql.get_connection() as connection:
