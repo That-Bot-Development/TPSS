@@ -141,7 +141,7 @@ class PunishmentCaseCommands(PunishmentSystem):
     @app_commands.command(name="editcase", description="Edits the reason listed on the specified punishment case.")
     @app_commands.checks.has_role("Staff")
     @app_commands.describe(case="The case number.", reason="The updated reason.")
-    async def removecase(self, interactions: discord.Interaction, case:app_commands.Range[int, 1, 999999], reason:str):
+    async def editcase(self, interactions: discord.Interaction, case:app_commands.Range[int, 1, 999999], reason:str):
 
         try:
             with self.sql.get_connection() as connection:
