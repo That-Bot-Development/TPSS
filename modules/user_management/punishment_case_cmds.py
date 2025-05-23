@@ -137,3 +137,27 @@ class PunishmentCaseCommands(PunishmentSystem):
             title=title,
             message=message
         ).create())
+
+    @app_commands.command(name="editcase", description="Edits the reason listed on the specified punishment case.")
+    @app_commands.checks.has_role("Staff")
+    @app_commands.describe(case="The case number.", reason="The updated reason.")
+    async def removecase(self, interactions: discord.Interaction, case:app_commands.Range[int, 1, 999999], reason:str):
+
+        try:
+            with self.sql.get_connection() as connection:
+                if self.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = %s",(case,),connection=connection,handle_except=False):
+                    self.sql.execute_query("UPDATE Punishments SET Reason = %s WHERE CaseNo = %s",(reason, case),connection=connection,handle_except=False)
+
+                    title=f"<:check:1346601762882326700> Case #{case} Removed"
+                    message=f"**Case #{case}** has successfully been removed from the record."
+                else:
+                    raise NotFoundError(f"Punishment case #{case} could not be found.")
+        except Exception as e:
+            await self.create_punishment_err(interactions,"edit punishment",e)
+            return
+
+        await interactions.response.send_message(embed=EmbedMaker(
+            embed_type=EmbedType.USER_MANAGEMENT,
+            title=title,
+            message=message
+        ).create())
