@@ -4,7 +4,7 @@ from discord import app_commands
 from modules.base import MemberNotFoundError
 from modules.user_management.punishment_system import PunishmentSystem, SelfPunishError
 from modules.util.embed_maker import *
-from modules.util.exceptions import DurationOutOfBoundsError
+from modules.util.exceptions import DurationOutOfBoundsError, PermissionError
 
 from datetime import *
 
@@ -16,15 +16,21 @@ class PunishmentCommands(PunishmentSystem):
     @app_commands.command(name="warn", description="Warns the specified member.")
     @app_commands.checks.has_role("Staff")
     @app_commands.describe(member="The member to be warned.", reason="The reason for the punishment.")
-    async def warn(self, interactions: discord.Interaction, member:discord.Member, reason:str):
+    async def warn(self, interactions: discord.Interaction, user:discord.User, reason:str):
         if not interactions.user.guild_permissions.moderate_members:
             return
         
         pun_type = "warn"
 
         try:
+            # User MUST be a member of the server
+            member = await self.get_member(user.id)
+
             if interactions.user.id == member.id:
                 raise SelfPunishError(interactions.user,pun_type)
+            # NOTE: Allowed by Default (because it's funny) -
+            # elif interactions.user.top_role <= member.top_role:
+            #    raise PermissionError(interactions.user,member,pun_type)
 
             # Commit to database
             id = None
@@ -48,12 +54,17 @@ class PunishmentCommands(PunishmentSystem):
     @app_commands.command(name="mute", description="Mutes the specified member.")
     @app_commands.checks.has_role("Staff")
     @app_commands.describe(member="The member to be muted.", reason="The reason for the punishment.", duration="The length of the punishment. (m = Minutes, h = Hours, d = Days, w = Weeks)")
-    async def mute(self, interactions: discord.Interaction, member:discord.Member, reason:str, duration:str):
+    async def mute(self, interactions: discord.Interaction, user:discord.User, reason:str, duration:str):
         pun_type = "mute"
 
         try:
+            # User MUST be a member of the server
+            member = await self.get_member(user.id)
+
             if interactions.user.id == member.id:
                 raise SelfPunishError(interactions.user,pun_type)
+            elif interactions.user.top_role <= member.top_role:
+                raise PermissionError(interactions.user,member,pun_type)
 
             time = await self.duration_str_to_time(duration)
 
@@ -84,12 +95,17 @@ class PunishmentCommands(PunishmentSystem):
     @app_commands.command(name="kick", description="Kicks the specified member.")
     @app_commands.checks.has_role("Staff")
     @app_commands.describe(member="The member to be kicked.", reason="The reason for the punishment.")
-    async def kick(self, interactions: discord.Interaction, member:discord.Member, reason:str):
+    async def kick(self, interactions: discord.Interaction, user:discord.User, reason:str):
         pun_type = "kick"
 
         try:
+            # User MUST be a member of the server
+            member = await self.get_member(user.id)
+
             if interactions.user.id == member.id:
                 raise SelfPunishError(interactions.user,pun_type)
+            elif interactions.user.top_role <= member.top_role:
+                raise PermissionError(interactions.user,member,pun_type)
             
             # DM must be sent before kicking the user from the server
             await self.send_punishment_dm(member,pun_type,reason)
@@ -129,6 +145,8 @@ class PunishmentCommands(PunishmentSystem):
         try:
             if interactions.user.id == member.id:
                 raise SelfPunishError(interactions.user,pun_type)
+            elif member is not None and interactions.user.top_role <= member.top_role:
+                raise PermissionError(interactions.user,member,pun_type)
             
             if duration is not None:
                 pun_type = "temp-ban"
@@ -175,6 +193,9 @@ class PunishmentCommands(PunishmentSystem):
         reason=f"Unmuted by {interactions.user.display_name}."
 
         try:
+            if interactions.user.id == member.id:
+                raise SelfPunishError(interactions.user,pun_type)
+
             # Remove Discord Timeout on this user
             await member.timeout(timedelta(seconds=0),reason=reason)
 
@@ -204,6 +225,9 @@ class PunishmentCommands(PunishmentSystem):
         reason=f"Unbanned by {interactions.user.display_name}"
 
         try:
+            if interactions.user.id == user.id:
+                raise SelfPunishError(interactions.user,pun_type)
+            
             # Remove Discord Ban on this user
             server:discord.Guild = self.d_consts.SERVER
             try:

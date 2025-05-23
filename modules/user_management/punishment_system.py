@@ -33,11 +33,13 @@ class PunishmentSystem(BaseModule):
         elif isinstance(e,DurationOutOfBoundsError):
             message = str(e)
         elif isinstance(e,MemberNotFoundError):
-            message = "This member could not be found.\nPlease ensure you entered the correct information.\nThis command will not work if the user is no longer in the server."
+            message = "The user specified is not a member of the server!"
         elif isinstance(e,NotFoundError):
             message = str(e)
         elif isinstance(e,SelfPunishError):
             message = "You tried to punish yourself. Genius stuff."
+        elif isinstance(e,PermissionError):
+            message = "You cannot punish this user!"
         else:
             message = "This action could not be completed.\nPlease ensure you have the required permissions.\n\nIf the issue persists, contact an admin."
 
