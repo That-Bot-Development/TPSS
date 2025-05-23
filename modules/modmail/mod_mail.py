@@ -27,6 +27,9 @@ class ModMail(BaseModule):
         return None
 
     async def create_ticket(self, interaction:discord.Interaction, ticket_data, reported_message:discord.Message=None):
+        if not interaction.response.is_done():
+            await interaction.response.defer(ephemeral=True)
+
         active_ticket = await self.get_ticket(interaction.user)
         if active_ticket is None:
 
@@ -66,6 +69,7 @@ class ModMail(BaseModule):
 
     async def get_ticket_type_data(self, select):
         '''Function to get data for the ticket type selection.'''
+        
         if select == ReportMember.SELECT_DATA[0]:
             data = ReportMember.TICKET_DATA
         elif select == StateQuestionConcern.SELECT_DATA[0]:
@@ -78,6 +82,9 @@ class ModMail(BaseModule):
             data = ReportEventManager.TICKET_DATA
         elif select == Other.SELECT_DATA[0]:
             data = Other.TICKET_DATA
+        else:
+            raise ValueError(f"Unrecognized selection: {select}")
+        
         return data
 
     async def ticket_creator(self):
