@@ -49,8 +49,8 @@ class StaffNotes(BaseModule):
 
     @app_commands.command(name="removenote", description="Removes a staff note on a user.")
     @app_commands.checks.has_role("Staff")
-    @app_commands.describe(user="The member to add the note to.", note="The note.")
-    async def addnote(self, interactions: discord.Interaction, user:discord.User, id:app_commands.Range[int, 1, 999]):
+    @app_commands.describe(user="The member to remove the note from.", id="The Note # to remove.")
+    async def removenote(self, interactions: discord.Interaction, user:discord.User, id:app_commands.Range[int, 1, 999]):
         removed = False
         
         try:
