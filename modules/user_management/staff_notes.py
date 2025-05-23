@@ -77,7 +77,7 @@ class StaffNotes(BaseModule):
                     raise NotFoundError(f"Could not find note #{id} for {user.display_name}.")                    
 
         except Exception as e:
-            self.create_note_err(interactions,"remove note",e)
+            await self.create_note_err(interactions,"remove note",e)
             return
 
         await interactions.response.send_message(embed=EmbedMaker(
