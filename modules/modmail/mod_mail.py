@@ -51,7 +51,8 @@ class ModMail(BaseModule):
                     message=f"""
                         **{reported_message.author}**:
                         {reported_message.content}
-                        Jump: https://discord.com/channels/{reported_message.guild.id}/{reported_message.channel.id}/{reported_message.id}
+
+                        <:links:1375354344798556311> https://discord.com/channels/{reported_message.guild.id}/{reported_message.channel.id}/{reported_message.id}
                     """
                 ).create())
 
@@ -67,25 +68,21 @@ class ModMail(BaseModule):
                 error=True
             ).create(),ephemeral=True,delete_after=120)
 
-    async def get_ticket_type_data(self, select):
-        '''Function to get data for the ticket type selection.'''
-        
-        if select == ReportMember.SELECT_DATA[0]:
-            data = ReportMember.TICKET_DATA
-        elif select == StateQuestionConcern.SELECT_DATA[0]:
-            data = StateQuestionConcern.TICKET_DATA
-        elif select == SuggestPoll.SELECT_DATA[0]:
-            data = SuggestPoll.TICKET_DATA
-        elif select == ReportMod.SELECT_DATA[0]:
-            data = ReportMod.TICKET_DATA
-        elif select == ReportEventManager.SELECT_DATA[0]:
-            data = ReportEventManager.TICKET_DATA
-        elif select == Other.SELECT_DATA[0]:
-            data = Other.TICKET_DATA
-        else:
-            raise ValueError(f"Unrecognized selection: {select}")
-        
-        return data
+
+    TICKET_DATA_MAP = {
+        ReportMember.SELECT_DATA[0]: ReportMember.TICKET_DATA,
+        StateQuestionConcern.SELECT_DATA[0]: StateQuestionConcern.TICKET_DATA,
+        SuggestPoll.SELECT_DATA[0]: SuggestPoll.TICKET_DATA,
+        ReportMod.SELECT_DATA[0]: ReportMod.TICKET_DATA,
+        ReportEventManager.SELECT_DATA[0]: ReportEventManager.TICKET_DATA,
+        Other.SELECT_DATA[0]: Other.TICKET_DATA,
+    }
+
+    async def get_ticket_type_data(self, selection:str):
+        try:
+            return self.TICKET_DATA_MAP[selection]
+        except KeyError:
+            raise ValueError(f"Unrecognized selection: {selection}")
 
     async def ticket_creator(self):
         mm_select = Select(
@@ -119,7 +116,7 @@ class ModMail(BaseModule):
         )
 
         async def callback(interaction):
-            ticket_data = await self.get_ticket_type_data(mm_select)
+            ticket_data = await self.get_ticket_type_data(interaction.data["values"][0])
             await self.create_ticket(interaction,ticket_data)
 
         mm_select.callback = callback
