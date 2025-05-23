@@ -43,7 +43,8 @@ class Cat(BaseModule):
 
     @app_commands.command(name="cat", description="Provides cat.")
     @app_commands.describe(filter="Filter what type of cat you would like provided.")
-    async def cat(self, interactions: discord.Interaction, filter:str=None):
+    async def cat(self, interaction: discord.Interaction, filter:str=None):
+        await interaction.response.defer(ephemeral=True)
 
         try:
             if filter == None:
@@ -71,7 +72,7 @@ class Cat(BaseModule):
                 embed.set_footer(text="From CatAAS")
                 embed.set_image(url=f"attachment://cat.{ext}")  # Use the URL from the response
                 #TODO: Replace with EmbedMaker
-                await interactions.response.send_message(file=dFile,embed=embed)
+                await interaction.followup.send(file=dFile,embed=embed)
             else:
                 raise Exception(f"Encountered code {response.status_code}")
 
