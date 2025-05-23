@@ -11,11 +11,11 @@ mod_mail: ModMail | None = None
 async def setup(client: commands.Bot):
     global mod_mail
 
+    client.tree.add_command(report_message)
+
     @client.event
     async def on_ready():
         global mod_mail
-
-        client.tree.add_command(report_message)
 
         cog = client.get_cog("ModMail")
         if isinstance(cog, ModMail):
