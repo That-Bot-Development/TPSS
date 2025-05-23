@@ -59,7 +59,7 @@ class ModMail(BaseModule):
             await interaction.followup.send(embed=EmbedMaker(
                 embed_type=EmbedType.MOD_MAIL,
                 title="Ticket Created",
-                message=f"Your {ticket_data[1]} ticket has been created! You can find it and send your {ticket_data[1]} here: <#{new_ticket.id}>"
+                message=f"Your {ticket_data[1]} ticket has been created! You can find it and follow up here: <#{new_ticket.id}>"
             ).create(),ephemeral=True)
         else:
             await interaction.followup.send_message(embed=EmbedMaker(
