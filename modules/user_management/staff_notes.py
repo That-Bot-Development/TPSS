@@ -13,7 +13,7 @@ class StaffNotes(BaseModule):
 
     @app_commands.command(name="notes", description="View staff notes on a user.")
     @app_commands.checks.has_role("Staff")
-    @app_commands.describe(user="The member to view notes on.")
+    @app_commands.describe(user="The user to view notes on.")
     async def notes(self, interactions: discord.Interaction, user:discord.User):
         try:
             notes = self.get_notes(user.id)
@@ -30,7 +30,7 @@ class StaffNotes(BaseModule):
     
     @app_commands.command(name="addnote", description="Adds a staff note on a user.")
     @app_commands.checks.has_role("Staff")
-    @app_commands.describe(user="The member to add the note to.", note="The note.")
+    @app_commands.describe(user="The user to add the note to.", note="The note.")
     async def addnote(self, interactions: discord.Interaction, user:discord.User, note:str):
         try:
             with self.sql.get_connection() as connection:
@@ -52,7 +52,7 @@ class StaffNotes(BaseModule):
 
     @app_commands.command(name="removenote", description="Removes a staff note on a user.")
     @app_commands.checks.has_role("Staff")
-    @app_commands.describe(user="The member to remove the note from.", id="The Note # to remove.")
+    @app_commands.describe(user="The user to remove the note from.", id="The Note # to remove.")
     async def removenote(self, interactions: discord.Interaction, user:discord.User, id:app_commands.Range[int, 1, 999]):
         try:
             with self.sql.get_connection() as connection:
@@ -86,7 +86,7 @@ class StaffNotes(BaseModule):
 
     @app_commands.command(name="editnote", description="Edits a staff note on a user.")
     @app_commands.checks.has_role("Staff")
-    @app_commands.describe(user="The member to edit the note on.", id="The Note # to edit.", note="The updated note.")
+    @app_commands.describe(user="The user to edit the note on.", id="The Note # to edit.", note="The updated note.")
     async def editnote(self, interactions: discord.Interaction, user:discord.User, id:app_commands.Range[int, 1, 999], note:str):
         try:
             with self.sql.get_connection() as connection:
