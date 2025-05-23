@@ -8,7 +8,7 @@ MISC_PING = 987189009656733696
 class ReportMember:
     '''Properties for Report Member ticket type.'''
     SELECT_DATA = ["Report a Member","📄","Report a member of That Place."]
-    TICKET_DATA = [MISC_PING, "member report"]
+    TICKET_DATA = [MOD_PING, "member report"]
 
 
 class StateQuestionConcern:
