@@ -149,7 +149,7 @@ class PunishmentCaseCommands(PunishmentSystem):
                     self.sql.execute_query("UPDATE Punishments SET Reason = %s WHERE CaseNo = %s",(reason, case),connection=connection,handle_except=False)
 
                     title=f"<:check:1346601762882326700> Case #{case} Edited"
-                    message=f"**Case #{case}** has been updated with reason `*{reason}*`."
+                    message=f"**Case #{case}** has been updated with reason '*{reason}*'."
                 else:
                     raise NotFoundError(f"Punishment case #{case} could not be found.")
         except Exception as e:
