@@ -27,12 +27,15 @@ class BaseModule(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         self.d_consts = self.client.get_cog("DiscordConstants")
-        # TODO: Make these global?
+        # TODO: Using class variables for some of these things, instance for others
+
         config = type(self).config
         if config:
-            if config["sql_enabled"]: # Double failsafe because why not...
+            if config["sql_enabled"]:
+                print(config["sql_enabled"])
                 self.sql = SQLManager()
             self.version = config["version"]
+            print(config["version"])
 
 
     async def get_member(self, user_id) -> discord.Member: # TODO: Should this even be here? NO neither should the thing below...
