@@ -27,7 +27,7 @@ class BaseModule(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         self.d_consts = self.client.get_cog("DiscordConstants")
-        # TODO:MAKE VESE GLOBAL
+        # TODO: Make these global?
         config = type(self).config
         if config:
             if config["sql_enabled"]: # Double failsafe because why not...

@@ -56,109 +56,6 @@ class PunishmentSystem(BaseModule):
             error=True
         ).create(),ephemeral=True)
         
-    async def send_punishment_response(self, interactions:discord.Interaction, user:discord.User, punishment_type:str, punishment_id:str, reason:str, expiry:datetime = None):    
-        cmd_response_message = f"**Case #{punishment_id}**: **{user.display_name}** has been {self.past_tense(punishment_type).lower()} with reason '*{reason}*'."
-
-        if expiry is not None:
-            try:
-                expiry_f:str = expiry.strftime("%d/%m/%Y @ %H:%M:%S")
-                cmd_response_message += f"\n\nThis punishment will expire on `{expiry_f}`."
-            except Exception:
-                pass
-
-        await interactions.response.send_message(embed=EmbedMaker(
-            embed_type=EmbedType.USER_MANAGEMENT,
-            title=f"<:check:1346601762882326700> {punishment_type.capitalize()} Applied",
-            message=cmd_response_message
-        ).create())
-
-    async def send_punishment_dm(self, member:discord.Member, punishment_type:str, reason:str, expiry:datetime=None, footer_message:str=''):
-        try:
-            message = f"**Reason**: {reason}"
-
-            if expiry is not None:
-                expiry_f:str = expiry.strftime("%d/%m/%Y @ %H:%M:%S")
-                message += f"\nYour punishment will expire on `{expiry_f}`"
-
-            message += f"\n{footer_message}"
-
-            await member.send(embed=EmbedMaker(
-                embed_type=EmbedType.USER_MANAGEMENT,
-                title=f"<:alert:1346654360012329044> You have been {self.past_tense(punishment_type).lower()}" +
-                    f"{' from That Place' if punishment_type in {'ban', 'kick'} else ''}.",
-                message=message
-            ).create())
-        except Exception:
-            pass
-
-    async def to_punishment_logs(self, user:discord.User, punishment_type:str, punishment_id:str, reason:str=None, expiry:datetime=None):
-        logs = self.d_consts.CHANNEL_MODLOGS
-
-        if expiry is not None:
-            expiry_f = f"`{expiry.strftime("%d/%m/%Y @ %H:%M:%S")}`"
-        else:
-            expiry_f = "Never"
-
-        try:
-            await logs.send(embed=EmbedMaker(
-                embed_type=EmbedType.USER_MANAGEMENT,
-                title=f"Case #{punishment_id}",
-                message=f"**{user.name}** - {punishment_type.lower()}\n**Reason**: {reason}\n**Expires**: {expiry_f}"
-            ).create())
-        except Exception:
-            # TODO: handle! (although I don't protect other message sends like this...)
-            pass
-
-    # Punishment System Internal Utilities
-    
-    async def duration_str_to_time(self, duration:str) -> timedelta:
-        m = h = d = w = 0
-        curNum = ""
-
-        for char in duration:
-            match(char):
-                case _ if char.isnumeric():
-                    curNum += char
-
-                case 'm':
-                    m += int(curNum)
-                case _ if char.lower() == 'h':
-                    h += int(curNum)
-                case _ if char.lower() == 'd':
-                    d += int(curNum)
-                case _ if char.lower() == 'w':
-                    w += int(curNum)
-                case 'M':
-                    # Timedelta does not support Months, this must be converted manually
-                    w += int(curNum)*4
-                case 'y':
-                    w += int(curNum)*52
-                case ' ':
-                    pass
-                case _:
-                    raise DurationParseError("Could not parse punishment duration from user input")
-    
-            # Reset current number once the value has been added to its respective category
-            if (char.isalpha()):
-                curNum = ""
-
-        return timedelta(
-            weeks=w,
-            days=d,
-            hours=h,
-            minutes=m,
-            seconds=0
-        )
-    
-    # Returns the past tense version of the very provided (only for the purpose of punishment types)
-    def past_tense(self, verb):
-        if verb.endswith("e"):
-            return verb + "d"
-        if verb.endswith("ban"):
-            return verb + "ned"
-        else:
-            return verb + "ed"
-        
 class ExpiredPunishmentManager(PunishmentSystem):
     '''Manages expired punishments'''
 
@@ -211,6 +108,12 @@ class ExpiredPunishmentManager(PunishmentSystem):
                     except Exception:
                         pass                
             
+class SelfPunishError(Exception):
+    """Thrown when a user attempts to issue a punishment on themselves."""
+    
+    def __init__(self, user:discord.User, pun_type:str):
+        super().__init__(f"{user.display_name} attempted to {pun_type} themselves.")
+
 class SelfPunishError(Exception):
     """Thrown when a user attempts to issue a punishment on themselves."""
     
