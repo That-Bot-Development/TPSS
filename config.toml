@@ -1,0 +1,29 @@
+version = "2.8.0"
+
+guild = 578356230637223936
+
+# Modules are loaded in the order in which they are placed
+# Modules that do not require instantiation or other initialization at startup are NOT listed here
+modules = [
+    "modules.base", 
+    "modules.util.sql_manager",
+    "modules.util.discord_const",
+    "modules.user_management.staff_notes",
+    "modules.user_management.punishment_system",
+    "modules.user_management.punishment_cmds",
+    "modules.user_management.punishment_case_cmds",
+    "modules.modmail.mod_mail",
+    "modules.modmail.report_msg",
+    "modules.art_manager",
+    "modules.suggestion_manager",
+    "modules.utilities",
+    "modules.fun.fun"
+]
+
+# This will also disable any modules that explicitly require the database (user management)
+sql_enabled = true
+
+debug_mode = false
+debug_modules = [
+
+]

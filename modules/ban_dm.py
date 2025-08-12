@@ -5,6 +5,9 @@ from modules.base import BaseModule
 
 from modules.util.embed_maker import *
 
+async def setup(client:commands.Bot, config):
+    await client.add_cog(BanDM(client))
+
 # DEPRECATED AS OF 2.8.0
 class BanDM(BaseModule):
     def __init__(self, client):

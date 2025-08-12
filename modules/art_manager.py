@@ -3,6 +3,8 @@ from discord.ext import commands
 
 from modules.base import BaseModule
 
+async def setup(client:commands.Bot, config):
+    await client.add_cog(ArtManager(client))
 
 class ArtManager(BaseModule):
     def __init__(self, client):

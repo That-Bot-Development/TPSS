@@ -12,6 +12,10 @@ class NotFoundError(Exception):
     """Thrown when the requested data cannot be found from the source."""
     pass
 
+class DatabaseError(Exception):
+    """Thrown when an issue occurs with reaching the SQL database."""
+    pass
+
 class PermissionError(Exception):
     """Thrown when the user does not have the required permissions to perform an action."""
 

@@ -1,11 +1,15 @@
 import discord
 from discord import app_commands
+from discord.ext import commands
 
 from modules.util.embed_maker import *
-from modules.util.exceptions import NotFoundError
+from modules.util.exceptions import NotFoundError, DatabaseError
 
 from datetime import *
-from mysql.connector import Error as sql_error
+
+async def setup(client:commands.Bot, config):
+    if config["sql_enabled"]:
+        await client.add_cog(StaffNotes(client))
 
 class StaffNotes(BaseModule):
     def __init__(self, client):
@@ -33,6 +37,9 @@ class StaffNotes(BaseModule):
     @app_commands.describe(user="The user to add the note to.", note="The note.")
     async def addnote(self, interactions: discord.Interaction, user:discord.User, note:str):
         try:
+            if not self.sql:
+                raise DatabaseError("SQL module is not initialized!")
+
             with self.sql.get_connection() as connection:
 
                 self.sql.execute_query("""
@@ -55,6 +62,9 @@ class StaffNotes(BaseModule):
     @app_commands.describe(user="The user to remove the note from.", id="The Note # to remove.")
     async def removenote(self, interactions: discord.Interaction, user:discord.User, id:app_commands.Range[int, 1, 999]):
         try:
+            if not self.sql:
+                raise DatabaseError("SQL module is not initialized!")
+
             with self.sql.get_connection() as connection:
 
                 result = self.sql.execute_query("""
@@ -89,6 +99,9 @@ class StaffNotes(BaseModule):
     @app_commands.describe(user="The user to edit the note on.", id="The Note # to edit.", note="The updated note.")
     async def editnote(self, interactions: discord.Interaction, user:discord.User, id:app_commands.Range[int, 1, 999], note:str):
         try:
+            if not self.sql:
+                raise DatabaseError("SQL module is not initialized!")
+
             with self.sql.get_connection() as connection:
 
                 result = self.sql.execute_query("""
@@ -120,6 +133,9 @@ class StaffNotes(BaseModule):
         ).create())
 
     def get_notes(self, user_id:int) -> str:
+        if not self.sql:
+            raise DatabaseError("SQL module is not initialized!")
+
         with self.sql.get_connection() as connection:
             results = self.sql.execute_query("""
                 SELECT Note FROM UserNotes WHERE UserID = %s ORDER BY IssuedAt DESC
@@ -140,7 +156,7 @@ class StaffNotes(BaseModule):
         return message
         
     async def create_note_err(self, interactions:discord.Interaction, action:str, e:Exception):
-        if isinstance(e, sql_error):
+        if isinstance(e, DatabaseError):
             message = "Unable to reach the database.\n\nIf the issue persists, contact an admin."
         elif isinstance(e, NotFoundError):
             message = str(e)
@@ -152,4 +168,4 @@ class StaffNotes(BaseModule):
             embed_type=EmbedType.USER_MANAGEMENT,
             message=message,
             error=True
-        ).create(),ephemeral=True,delete_after=20)
+        ).create(),ephemeral=True)

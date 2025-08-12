@@ -1,6 +1,9 @@
 import discord
 from discord.ext import commands
 
+async def setup(client:commands.Bot, config):
+    await client.add_cog(DiscordConstants(client))
+
 #TODO: Make this configurable through discord instead of hardcoded
 class DiscordConstants(commands.Cog):
     _instance = None

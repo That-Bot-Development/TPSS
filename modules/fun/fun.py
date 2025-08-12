@@ -1,5 +1,6 @@
 import discord
 from discord import app_commands
+from discord.ext import commands
 
 from modules.base import BaseModule
 from modules.util.embed_maker import *
@@ -7,6 +8,9 @@ from modules.util.embed_maker import *
 import requests
 import time
 
+async def setup(client:commands.Bot, config):
+    await client.add_cog(Say(client))
+    await client.add_cog(Cat(client))
 
 class Say(BaseModule):
     def __init__(self, client):
@@ -35,7 +39,7 @@ class Say(BaseModule):
                 embed_type=EmbedType.MISC,
                 message="This likely means That Bot does not have access to speak in this channel.\n\nContact an Admin if you believe this is a mistake.",
                 error=True
-            ).create(),ephemeral=True,delete_after=20)
+            ).create(),ephemeral=True)
 
 class Cat(BaseModule):
     def __init__(self, client):
@@ -82,5 +86,5 @@ class Cat(BaseModule):
                 embed_type=EmbedType.MISC,
                 message="This likely means the [CatAAS API](https://cataas.com/) is down.\n\nContact an Admin if you believe this is a mistake.",
                 error=True
-            ).create(),ephemeral=True) # FIXME: This is inconsistent! Other error messages can delete after 20s, cannot due to deferring...
+            ).create(),ephemeral=True)
         

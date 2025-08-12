@@ -8,6 +8,9 @@ from modules.modmail.ticket_types import ReportMember, StateQuestionConcern, Sug
 from modules.util.embed_maker import *
 
 
+async def setup(client:commands.Bot, config):
+    await client.add_cog(ModMail(client))
+
 class ModMail(BaseModule):
     def __init__(self, client):
         self.client = client
@@ -148,6 +151,8 @@ class ModMail(BaseModule):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        await super().on_ready()
+        
         # This should only ron on initial boot
         if self.bot_started is False:
             # Generate persistent interactions

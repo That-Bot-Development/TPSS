@@ -6,13 +6,19 @@ from modules.util.embed_maker import *
 from modules.util.exceptions import *
 
 from datetime import *
-from mysql.connector import Error as sql_error
 import asyncio
+
+async def setup(client:commands.Bot, config):
+    if config["sql_enabled"]:
+        await client.add_cog(PunishmentSystem(client))
 
 class PunishmentSystem(BaseModule):
     """Base class for the That Bot Punishment System"""
 
     async def commit_punishment(self, user_id:int, punishment_type:str, reason:str, issued_by_id:int, expires:datetime=None):
+        if not self.sql:
+            raise DatabaseError("SQL module is not initialized!")
+
         with self.sql.get_connection() as connection:
             self.sql.execute_query("""
                 INSERT INTO Punishments (UserID, Type, Reason, IssuedByID, ExpiresAt) 
@@ -26,7 +32,7 @@ class PunishmentSystem(BaseModule):
         return id
 
     async def create_punishment_err(self, interactions:discord.Interaction, action:str, e:Exception):
-        if isinstance(e, sql_error):
+        if isinstance(e, DatabaseError):
             message = "Unable to reach the database.\n\nIf the issue persists, contact an admin."
         elif isinstance(e,DurationParseError):
             message = "The duration could not be parsed.\nPlease ensure you follow the proper format:\n> m = Minutes, h = Hours, d = Days, w = Weeks, M = Months, y = Years\n*ex.* **2d 5h**"
@@ -48,7 +54,7 @@ class PunishmentSystem(BaseModule):
             embed_type=EmbedType.USER_MANAGEMENT,
             message=message,
             error=True
-        ).create(),ephemeral=True,delete_after=20)
+        ).create(),ephemeral=True)
         
     async def send_punishment_response(self, interactions:discord.Interaction, user:discord.User, punishment_type:str, punishment_id:str, reason:str, expiry:datetime = None):    
         cmd_response_message = f"**Case #{punishment_id}**: **{user.display_name}** has been {self.past_tense(punishment_type).lower()} with reason '*{reason}*'."
@@ -100,7 +106,7 @@ class PunishmentSystem(BaseModule):
                 message=f"**{user.name}** - {punishment_type.lower()}\n**Reason**: {reason}\n**Expires**: {expiry_f}"
             ).create())
         except Exception:
-            # TODO: handle!
+            # TODO: handle! (although I don't protect other message sends like this...)
             pass
 
     # Punishment System Internal Utilities
@@ -158,12 +164,14 @@ class ExpiredPunishmentManager(PunishmentSystem):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        await super().on_ready()
+
         if not self.unban_expired_tempbans.is_running():
             self.unban_expired_tempbans.start()
         #if not self.remove_expired_punishments.is_running():
          #   self.remove_expired_punishments.start()
 
-    #NOTE: Not a fan of this implementation, could be done better if we had a 'expired' column for temp-bans
+    # NOTE: Not a fan of this implementation, could be done better if we had a 'expired' column for temp-bans
     @tasks.loop(minutes=1)
     async def unban_expired_tempbans(self):
         '''Removes all expires tempbans'''
@@ -183,7 +191,7 @@ class ExpiredPunishmentManager(PunishmentSystem):
                 except Exception:
                    pass
 
-    @tasks.loop(minutes=1) #TODO: Finish ts!
+    @tasks.loop(minutes=1) #TODO: Finish ts! 
     async def remove_expired_punishments(self):
         cur_datetime = datetime.now()
 

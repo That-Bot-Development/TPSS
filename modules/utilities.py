@@ -1,9 +1,13 @@
 import discord
 from discord import app_commands
+from discord.ext import commands
 from discord.ui import View, Button
 
 from modules.base import BaseModule
 from modules.util.embed_maker import *
+
+async def setup(client:commands.Bot, config):
+    await client.add_cog(SQLQuery(client))
 
 class SQLQuery(BaseModule):
     def __init__(self, client):
@@ -17,7 +21,7 @@ class SQLQuery(BaseModule):
                 embed_type=EmbedType.MISC,
                 message=f"Access is restricted.",
                 error=True
-            ).create(), ephemeral=True, delete_after=20)
+            ).create(), ephemeral=True)
             return
         
         # Send initial response to prevent timeout

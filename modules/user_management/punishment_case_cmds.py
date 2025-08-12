@@ -5,11 +5,14 @@ from discord.ext import commands
 from modules.user_management.punishment_system import PunishmentSystem
 from modules.user_management.staff_notes import StaffNotes
 from modules.util.embed_maker import *
-from modules.util.exceptions import NotFoundError
+from modules.util.exceptions import NotFoundError, DatabaseError
 
 import traceback
 from datetime import *
 
+async def setup(client:commands.Bot, config):
+    if config["sql_enabled"]:
+        await client.add_cog(PunishmentCaseCommands(client))
 
 class PunishmentCaseCommands(PunishmentSystem):
     def __init__(self, client):
@@ -18,6 +21,8 @@ class PunishmentCaseCommands(PunishmentSystem):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        await super().on_ready()
+        
         cog = self.client.get_cog("StaffNotes")
         if isinstance(cog, StaffNotes):
             self.staff_notes: StaffNotes = cog
@@ -32,6 +37,9 @@ class PunishmentCaseCommands(PunishmentSystem):
         message = ""
 
         try:
+            if not self.sql:
+                raise DatabaseError("SQL module is not initialized!")
+
             with self.sql.get_connection() as connection:
                 #TODO: Re-evaluate if I need to be creating an independent connection when I am only executing one query in the function
                 results = self.sql.execute_query("SELECT * FROM Punishments WHERE UserID = %s",(user.id,),connection=connection,handle_except=False)
@@ -69,6 +77,9 @@ class PunishmentCaseCommands(PunishmentSystem):
     @app_commands.describe(case="The case number.")
     async def case(self, interactions: discord.Interaction, case:app_commands.Range[int, 1, 999999]):        
         try:
+            if not self.sql:
+                raise DatabaseError("SQL module is not initialized!")
+
             with self.sql.get_connection() as connection:
                 results = self.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = %s",(case,),connection=connection,handle_except=False)
 
@@ -120,6 +131,9 @@ class PunishmentCaseCommands(PunishmentSystem):
     async def removecase(self, interactions: discord.Interaction, case:app_commands.Range[int, 1, 999999]):
 
         try:
+            if not self.sql:
+                raise DatabaseError("SQL module is not initialized!")
+            
             with self.sql.get_connection() as connection:
                 if self.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = %s",(case,),connection=connection,handle_except=False):
                     self.sql.execute_query("DELETE FROM Punishments WHERE CaseNo = %s",(case,),connection=connection,handle_except=False)
@@ -144,6 +158,9 @@ class PunishmentCaseCommands(PunishmentSystem):
     async def editcase(self, interactions: discord.Interaction, case:app_commands.Range[int, 1, 999999], reason:str):
 
         try:
+            if not self.sql:
+                raise DatabaseError("SQL module is not initialized!")
+
             with self.sql.get_connection() as connection:
                 if self.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = %s",(case,),connection=connection,handle_except=False):
                     self.sql.execute_query("UPDATE Punishments SET Reason = %s WHERE CaseNo = %s",(reason, case),connection=connection,handle_except=False)

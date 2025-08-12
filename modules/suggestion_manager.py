@@ -3,6 +3,8 @@ from discord.ext import commands
 
 from modules.base import BaseModule
 
+async def setup(client:commands.Bot, config):
+    await client.add_cog(SuggestionManager(client))
 
 class SuggestionManager(BaseModule):
     def __init__(self, client):

@@ -8,7 +8,7 @@ from modules.util.embed_maker import *
 
 mod_mail: ModMail | None = None
 
-async def setup(client: commands.Bot):
+async def setup(client:commands.Bot, config):
     global mod_mail
 
     client.tree.add_command(report_message)
@@ -31,7 +31,7 @@ async def report_message(interaction: discord.Interaction, message: discord.Mess
             embed_type=EmbedType.MOD_MAIL,
             message="You cannot report yourself!",
             error=True
-        ).create(), ephemeral=True, delete_after=20)
+        ).create(), ephemeral=True)
 
     # Use the ReportMember ticket type
     await mod_mail.create_ticket(

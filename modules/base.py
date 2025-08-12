@@ -4,18 +4,36 @@ from discord.ext import commands
 from modules.util.sql_manager import SQLManager
 from modules.util.discord_const import DiscordConstants
 
+async def setup(client:commands.Bot, config):
+    await client.add_cog(BaseModule(client, config))
 
 class BaseModule(commands.Cog):
-    # "Global" items that all modules should be able to access
-    client:discord.Client = None
-    bot_started = False
-    version = "2.8.0" # Move to config, add getter
+    # TODO: Make class vars and _
+    client: commands.Bot | None = None
+    bot_started = False # NOTE: Deprecated
+    config = None
+    version = "Unknown"
     d_consts:DiscordConstants = None
     sql:SQLManager = None
 
 
-    def __init__(self, client):
+    def __init__(self, client, config=None):
+        # Load config 
+        if config:
+            type(self).config = config
+
         self.client = client
+    
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.d_consts = self.client.get_cog("DiscordConstants")
+        # TODO:MAKE VESE GLOBAL
+        config = type(self).config
+        if config:
+            if config["sql_enabled"]: # Double failsafe because why not...
+                self.sql = SQLManager()
+            self.version = config["version"]
+
 
     async def get_member(self, user_id) -> discord.Member: # TODO: Should this even be here? NO neither should the thing below...
         server:discord.Guild = self.d_consts.SERVER

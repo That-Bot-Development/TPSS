@@ -1,5 +1,6 @@
 import discord
 from discord import app_commands
+from discord.ext import commands
 
 from modules.base import MemberNotFoundError
 from modules.user_management.punishment_system import PunishmentSystem, SelfPunishError
@@ -8,7 +9,12 @@ from modules.util.exceptions import DurationOutOfBoundsError, PermissionError
 
 from datetime import *
 
+async def setup(client:commands.Bot, config):
+    if config["sql_enabled"]:
+        await client.add_cog(PunishmentCommands(client))
+
 #TODO: Manage Members permission check failsafe (currently temporary solution)
+#TODO: DEFER when using DB (pretty much everything here)
 class PunishmentCommands(PunishmentSystem):
     def __init__(self, client):
         self.client = client
@@ -236,8 +242,7 @@ class PunishmentCommands(PunishmentSystem):
             try:
                 await server.unban(user, reason=reason)
             except Exception:
-                # TODO: Raise error for user not banned
-                print("Not banned")
+                # TODO: Raise error for user not banned?
                 pass
 
             #TODO: Check what exception is thrown if user isnt found here
