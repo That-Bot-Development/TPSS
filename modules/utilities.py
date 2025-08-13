@@ -3,47 +3,48 @@ from discord import app_commands
 from discord.ext import commands
 from discord.ui import View, Button
 
+from bot_client import Client
 from modules.base import BaseModule
 from modules.util.embed_maker import *
 
-async def setup(client:commands.Bot, config):
+async def setup(client:Client, config):
     await client.add_cog(SQLQuery(client))
 
 class SQLQuery(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         self.client = client
 
     @app_commands.command(name="query", description="[Admin] Run a SQL query on the database.")
     @app_commands.describe(query="Your query.")
     async def query(self, interaction: discord.Interaction, query: str):
-        if not self.d_consts.ROLE_ADMIN in interaction.user.roles:
-            await interaction.response.send_message(embed=EmbedMaker(
+        if not self.client.d_consts.ROLE_ADMIN in interaction.user.roles:
+            await interaction.response.send_message(embed=self.client.embeds.create(
                 embed_type=EmbedType.MISC,
                 message=f"Access is restricted.",
                 error=True
-            ).create(), ephemeral=True)
+            ), ephemeral=True)
             return
         
         # Send initial response to prevent timeout
         await interaction.response.defer()
         
         try:
-            result = self.sql.execute_query(query=query, handle_except=False)
+            result = self.client.sql.execute_query(query=query, handle_except=False)
         except Exception as e:
             print(f"Exception occurred in 'query' operation: {e}")
-            await interaction.followup.send(embed=EmbedMaker(
+            await interaction.followup.send(embed=self.client.embeds.create(
                 embed_type=EmbedType.MISC,
                 message=f"```{e}```",
                 error=True
-            ).create())
+            ))
             return
 
         if not result:
-            await interaction.followup.send(embed=EmbedMaker(
+            await interaction.followup.send(embed=self.client.embeds.create(
                 embed_type=EmbedType.MISC,
                 title="Query Result",
                 message="No result returned"
-            ).create())
+            ))
             return
 
         pages = [""]
@@ -62,11 +63,11 @@ class SQLQuery(BaseModule):
 
             async def update_message(self, interaction: discord.Interaction):
                 self.update_buttons()
-                await interaction.response.edit_message(embed=EmbedMaker(
+                await interaction.response.edit_message(embed=self.client.embeds.create(
                     embed_type=EmbedType.MISC,
                     title=f"Query Result (Page {self.current_page + 1}/{len(self.pages)})",
                     message=f"```{self.pages[self.current_page]}```"
-                ).create(), view=self)
+                ), view=self)
 
             def update_buttons(self):
                 self.children[0].disabled = (self.current_page == 0)
@@ -102,8 +103,8 @@ class SQLQuery(BaseModule):
 
         
         view = PaginationView(pages) if len(pages) > 1 else discord.utils.MISSING
-        await interaction.followup.send(embed=EmbedMaker(
+        await interaction.followup.send(embed=self.client.embeds.create(
             embed_type=EmbedType.MISC,
             title=f"Query Result (Page 1/{len(pages)})",
             message=f"```{pages[0]}```"
-        ).create(), view=view)
+        ), view=view)

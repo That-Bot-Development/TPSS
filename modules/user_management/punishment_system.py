@@ -1,6 +1,7 @@
 import discord
 from discord.ext import tasks, commands
 
+from bot_client import Client
 from modules.base import BaseModule, MemberNotFoundError
 from modules.util.embed_maker import *
 from modules.util.exceptions import *
@@ -8,7 +9,7 @@ from modules.util.exceptions import *
 from datetime import *
 import asyncio
 
-async def setup(client:commands.Bot, config):
+async def setup(client:Client, config):
     if config["sql_enabled"]:
         await client.add_cog(PunishmentSystem(client))
 
@@ -16,16 +17,16 @@ class PunishmentSystem(BaseModule):
     """Base class for the That Bot Punishment System"""
 
     async def commit_punishment(self, user_id:int, punishment_type:str, reason:str, issued_by_id:int, expires:datetime=None):
-        if not self.sql:
+        if not self.client.sql:
             raise DatabaseError("SQL module is not initialized!")
 
-        with self.sql.get_connection() as connection:
-            self.sql.execute_query("""
+        with self.client.sql.get_connection() as connection:
+            self.client.sql.execute_query("""
                 INSERT INTO Punishments (UserID, Type, Reason, IssuedByID, ExpiresAt) 
                 VALUES (%s,%s,%s,%s,%s)
             """,(user_id,punishment_type,reason,issued_by_id,expires),connection=connection,handle_except=False)
 
-            result = self.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = LAST_INSERT_ID()",connection=connection,handle_except=False)
+            result = self.client.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = LAST_INSERT_ID()",connection=connection,handle_except=False)
 
         id = result[0]['CaseNo'] if result else "?"
 
@@ -50,11 +51,11 @@ class PunishmentSystem(BaseModule):
             message = "This action could not be completed.\nPlease ensure you have the required permissions.\n\nIf the issue persists, contact an admin."
 
         print(f"Exception occured in '{action}' operation: {e}")
-        await interactions.response.send_message(embed=EmbedMaker(
+        await interactions.response.send_message(embed=self.client.embeds.create(
             embed_type=EmbedType.USER_MANAGEMENT,
             message=message,
             error=True
-        ).create(),ephemeral=True)
+        ),ephemeral=True)
         
 class ExpiredPunishmentManager(PunishmentSystem):
     '''Manages expired punishments'''
@@ -74,13 +75,13 @@ class ExpiredPunishmentManager(PunishmentSystem):
         '''Removes all expires tempbans'''
         cur_datetime = datetime.now()
 
-        results = self.sql.execute_query(
+        results = self.client.sql.execute_query(
             "SELECT * FROM Punishments WHERE Type = 'temp-ban' AND ExpiresAt < %s AND ExpiresAt > %s",
             (cur_datetime,cur_datetime - timedelta(weeks=1))
         )
 
         if results:
-            server:discord.Guild = self.d_consts.SERVER
+            server:discord.Guild = self.client.d_consts.SERVER
             for row in results:
                 try:
                     user:discord.User = await self.client.fetch_user(row['UserID'])
@@ -92,8 +93,8 @@ class ExpiredPunishmentManager(PunishmentSystem):
     async def remove_expired_punishments(self):
         cur_datetime = datetime.now()
 
-        with self.sql.get_connection() as connection:
-            results = self.sql.execute_query(
+        with self.client.sql.get_connection() as connection:
+            results = self.client.sql.execute_query(
                 "SELECT * FROM Punishments WHERE Type != 'temp-ban' OR Type != 'ban' AND ExpiresAt < %s",
                 (cur_datetime,cur_datetime - timedelta(weeks=8)),
                 connection=connection

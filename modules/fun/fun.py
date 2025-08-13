@@ -2,18 +2,19 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from bot_client import Client
 from modules.base import BaseModule
 from modules.util.embed_maker import *
 
 import requests
 import time
 
-async def setup(client:commands.Bot, config):
+async def setup(client:Client, config):
     await client.add_cog(Say(client))
     await client.add_cog(Cat(client))
 
 class Say(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         self.client = client
 
     @app_commands.command(name="say", description="Put words in That Bot's figurative mouth.")
@@ -26,23 +27,23 @@ class Say(BaseModule):
             else:
                 response = await interactions.channel.fetch_message(replyto)
                 await response.reply(message)
-            await self.d_consts.CHANNEL_MISCLOGS.send(embed=EmbedMaker(
+            await self.client.d_consts.CHANNEL_MISCLOGS.send(embed=self.client.embeds.create(
                 embed_type=EmbedType.ACTIVITY_LOG,
                 title = "Say Command",
                 message=f"**{interactions.user.display_name}:** {message} ({response.jump_url})"
-            ).create(),silent=True,allowed_mentions=self.d_consts.VAR_ALLOWEDMENTIONS_NONE)
+            ),silent=True,allowed_mentions=self.client.d_consts.VAR_ALLOWEDMENTIONS_NONE)
             await interactions.response.send_message("<:Advertisement:622603404212174849>",ephemeral=True,delete_after=0)
 
         except Exception as e:
             print(f"Exception occured in 'say' operation: {e}")
-            await interactions.response.send_message(embed=EmbedMaker(
+            await interactions.response.send_message(embed=self.client.embeds.create(
                 embed_type=EmbedType.MISC,
                 message="This likely means That Bot does not have access to speak in this channel.\n\nContact an Admin if you believe this is a mistake.",
                 error=True
-            ).create(),ephemeral=True)
+            ),ephemeral=True)
 
 class Cat(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         self.client = client
 
     @app_commands.command(name="cat", description="Provides cat.")
@@ -82,9 +83,9 @@ class Cat(BaseModule):
 
         except Exception as e:
             print(f"Exception occured in 'cat' operation: {e}")
-            await interaction.response.send_message(embed=EmbedMaker(
+            await interaction.response.send_message(embed=self.client.embeds.create(
                 embed_type=EmbedType.MISC,
                 message="This likely means the [CatAAS API](https://cataas.com/) is down.\n\nContact an Admin if you believe this is a mistake.",
                 error=True
-            ).create(),ephemeral=True)
+            ),ephemeral=True)
         

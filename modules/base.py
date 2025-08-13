@@ -1,45 +1,28 @@
 import discord
 from discord.ext import commands
 
+from bot_client import Client
 from modules.util.sql_manager import SQLManager
 from modules.util.discord_const import DiscordConstants
 
-async def setup(client:commands.Bot, config):
+async def setup(client:Client, config):
     await client.add_cog(BaseModule(client, config))
 
 class BaseModule(commands.Cog):
-    # TODO: Make class vars and _
-    client: commands.Bot | None = None
-    bot_started = False # NOTE: Deprecated
-    config = None
-    version = "Unknown"
-    d_consts:DiscordConstants = None
-    sql:SQLManager = None
 
-
-    def __init__(self, client, config=None):
+    def __init__(self, client:Client, config=None):
         # Load config 
         if config:
-            type(self).config = config
+            config = config
 
         self.client = client
     
     @commands.Cog.listener()
     async def on_ready(self):
-        self.d_consts = self.client.get_cog("DiscordConstants")
-        # TODO: Using class variables for some of these things, instance for others
-
-        config = type(self).config
-        if config:
-            if config["sql_enabled"]:
-                print(config["sql_enabled"])
-                self.sql = SQLManager()
-            self.version = config["version"]
-            print(config["version"])
-
+        pass
 
     async def get_member(self, user_id) -> discord.Member: # TODO: Should this even be here? NO neither should the thing below...
-        server:discord.Guild = self.d_consts.SERVER
+        server:discord.Guild = self.client.d_consts.SERVER
         try:
             return server.get_member(user_id) or await server.fetch_member(user_id)
         except Exception:

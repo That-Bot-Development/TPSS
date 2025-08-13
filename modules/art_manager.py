@@ -3,16 +3,18 @@ from discord.ext import commands
 
 from modules.base import BaseModule
 
-async def setup(client:commands.Bot, config):
+from bot_client import Client
+
+async def setup(client:Client, config):
     await client.add_cog(ArtManager(client))
 
 class ArtManager(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         self.client = client
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.channel == self.d_consts.CHANNEL_YOURART:
+        if message.channel == self.client.d_consts.CHANNEL_YOURART:
             # Check if message contains URL
             has_url = False
             for word in message.content.split():

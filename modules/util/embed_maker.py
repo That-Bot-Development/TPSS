@@ -1,10 +1,9 @@
 from enum import Enum
 
 import discord
-from discord import app_commands
-from datetime import timedelta
+from discord.ext import commands
 
-from modules.base import BaseModule
+from bot_client import Client
 
 class EmbedType(Enum):
     MOD_MAIL = 0
@@ -12,15 +11,11 @@ class EmbedType(Enum):
     ACTIVITY_LOG = 2
     MISC = 3
 
-class EmbedMaker(BaseModule): # This probably should not extend BaseModule 
-    def __init__(self, embed_type:EmbedType, message:str, title:str="", image_url:str="", error:bool=False):
-        self.embed_type = embed_type
-        self.message = message
-        self.title = title
-        self.image_url = image_url
-        self.error = error
+class EmbedMaker(): # This probably should not extend BaseModule 
+    def __init__(self, client:Client):
+        self.client = client
 
-    def create(self):
+    def create(self, embed_type:EmbedType, message:str, title:str="", image_url:str="", error:bool=False):
         embed = discord.Embed(color=0x69b2ff, title=self.title,description=self.message)
 
         if self.image_url is not None:
@@ -39,7 +34,7 @@ class EmbedMaker(BaseModule): # This probably should not extend BaseModule
         if self.error:
             embed.title = "<:alert:1346654360012329044> An error occured!"
             embed.color = 0xFF264D
-        embed.set_footer(text=f"That Bot v{self.version}")
+        embed.set_footer(text=f"That Bot v{self.client.version}")
 
         return embed
 

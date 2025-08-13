@@ -5,10 +5,11 @@ import asyncio
 import importlib as imp
 import tomllib
 
+from bot_client import Client
+import modules.util.sql_manager as sql
+import modules.util.embed_maker as embed
 
-GUID = discord.Object(id=578356230637223936)
 intents = discord.Intents.all() 
-
 
 # Load configuration
 
@@ -23,17 +24,7 @@ GUILD: discord.Object = CONFIG["guild"]
 
 
 # Initialize client
-
-class aClient(commands.Bot):
-    def __init__(self, *, intents: discord.Intents):
-        super().__init__(intents=intents,command_prefix="db_tpss!")
-        print("[Setup] Bot client initialized.")
-    async def setup_hook(self): # single-server
-        self.tree.copy_global_to(guild=GUID)
-        await self.tree.sync(guild=GUID)
-
-client = aClient(intents=intents)
-
+client = Client(intents=intents,config=CONFIG)
 
 async def getToken():
      with open('private/token.txt', 'r') as file:
@@ -52,6 +43,12 @@ async def init_modules():
                 raise Exception("No setup function found!")
         except Exception as e:
             print(f"[Setup] Failed to load {module_path}: {e}")
+
+    await initialize_cog_global_resources()
+
+
+async def initialize_cog_global_resources():
+    client.d_consts = client.get_cog("DiscordConstants")
 
 
 # Initialize cogs

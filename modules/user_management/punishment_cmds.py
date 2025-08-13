@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from bot_client import Client
 from modules.base import MemberNotFoundError
 from modules.user_management.punishment_system import PunishmentSystem, SelfPunishError
 from modules.util.embed_maker import *
@@ -9,14 +10,14 @@ from modules.util.exceptions import DurationOutOfBoundsError, DurationParseError
 
 from datetime import *
 
-async def setup(client:commands.Bot, config):
+async def setup(client:Client, config):
     if config["sql_enabled"]:
         await client.add_cog(PunishmentCommands(client))
 
 #TODO: Manage Members permission check failsafe (currently temporary solution)
 #TODO: DEFER when using DB (pretty much everything here)
 class PunishmentCommands(PunishmentSystem):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         self.client = client
 
     @app_commands.command(name="warn", description="Warns the specified member.")
@@ -153,7 +154,7 @@ class PunishmentCommands(PunishmentSystem):
                 await self.send_punishment_dm(member,pun_type,reason,footer_message="If you feel as if your punishment should be removed, please fill out [this](https://forms.gle/ewMRCRny6RQMZxna9) form. Please be reasonable when submitting your appeal.")
 
             # Issue a Discord Ban on this user
-            server:discord.Guild = self.d_consts.SERVER
+            server:discord.Guild = self.client.d_consts.SERVER
             try:
                 await server.ban(user, reason=reason)
             except Exception:
@@ -223,7 +224,7 @@ class PunishmentCommands(PunishmentSystem):
             await self.verify_punish_permissions(interactions.user,None,user.id,pun_type)
             
             # Remove Discord Ban on this user
-            server:discord.Guild = self.d_consts.SERVER
+            server:discord.Guild = self.client.d_consts.SERVER
             try:
                 await server.unban(user, reason=reason)
             except Exception:
@@ -260,11 +261,11 @@ class PunishmentCommands(PunishmentSystem):
             except Exception:
                 pass
 
-        await interactions.response.send_message(embed=EmbedMaker(
+        await interactions.response.send_message(embed=self.client.embeds.create(
             embed_type=EmbedType.USER_MANAGEMENT,
             title=f"<:check:1346601762882326700> {punishment_type.capitalize()} Applied",
             message=cmd_response_message
-        ).create())
+        ))
 
     async def send_punishment_dm(self, member:discord.Member, punishment_type:str, reason:str, expiry:datetime=None, footer_message:str=''):
         try:
@@ -276,17 +277,17 @@ class PunishmentCommands(PunishmentSystem):
 
             message += f"\n{footer_message}"
 
-            await member.send(embed=EmbedMaker(
+            await member.send(embed=self.client.embeds.create(
                 embed_type=EmbedType.USER_MANAGEMENT,
                 title=f"<:alert:1346654360012329044> You have been {self.past_tense(punishment_type).lower()}" +
                     f"{' from That Place' if punishment_type in {'ban', 'kick'} else ''}.",
                 message=message
-            ).create())
+            ))
         except Exception:
             pass
 
     async def to_punishment_logs(self, user:discord.User, punishment_type:str, punishment_id:str, reason:str=None, expiry:datetime=None):
-        logs = self.d_consts.CHANNEL_MODLOGS
+        logs = self.client.d_consts.CHANNEL_MODLOGS
 
         if expiry is not None:
             expiry_f = f"`{expiry.strftime("%d/%m/%Y @ %H:%M:%S")}`"
@@ -294,11 +295,11 @@ class PunishmentCommands(PunishmentSystem):
             expiry_f = "Never"
 
         try:
-            await logs.send(embed=EmbedMaker(
+            await logs.send(embed=self.client.embeds.create(
                 embed_type=EmbedType.USER_MANAGEMENT,
                 title=f"Case #{punishment_id}",
                 message=f"**{user.name}** - {punishment_type.lower()}\n**Reason**: {reason}\n**Expires**: {expiry_f}"
-            ).create())
+            ))
         except Exception:
             # TODO: handle! (although I don't protect other message sends like this...)
             pass

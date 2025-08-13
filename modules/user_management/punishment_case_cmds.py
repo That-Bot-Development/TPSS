@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from bot_client import Client
 from modules.user_management.punishment_system import PunishmentSystem
 from modules.user_management.staff_notes import StaffNotes
 from modules.util.embed_maker import *
@@ -10,12 +11,12 @@ from modules.util.exceptions import NotFoundError, DatabaseError
 import traceback
 from datetime import *
 
-async def setup(client:commands.Bot, config):
+async def setup(client:Client, config):
     if config["sql_enabled"]:
         await client.add_cog(PunishmentCaseCommands(client))
 
 class PunishmentCaseCommands(PunishmentSystem):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         self.client = client #TODO this is redundant, done in base class... use super().__init__(client)
         self.staff_notes = None
 
@@ -37,12 +38,12 @@ class PunishmentCaseCommands(PunishmentSystem):
         message = ""
 
         try:
-            if not self.sql:
+            if not self.client.sql:
                 raise DatabaseError("SQL module is not initialized!")
 
-            with self.sql.get_connection() as connection:
+            with self.client.sql.get_connection() as connection:
                 #TODO: Re-evaluate if I need to be creating an independent connection when I am only executing one query in the function
-                results = self.sql.execute_query("SELECT * FROM Punishments WHERE UserID = %s",(user.id,),connection=connection,handle_except=False)
+                results = self.client.execute_query("SELECT * FROM Punishments WHERE UserID = %s",(user.id,),connection=connection,handle_except=False)
 
                 if results:
                     lines = []
@@ -66,22 +67,22 @@ class PunishmentCaseCommands(PunishmentSystem):
 
                 message += "\n\n-# <:alert:1346654360012329044> Notes could not be loaded."
 
-        await interactions.response.send_message(embed=EmbedMaker(
+        await interactions.response.send_message(embed=self.client.embeds.create(
             embed_type=EmbedType.USER_MANAGEMENT,
             title=f"Punishments: {self.truncate_string(user.display_name)}",
             message=message
-        ).create())
+        ))
 
     @app_commands.command(name="case", description="View a specific punishment case.")
     @app_commands.checks.has_role("Staff")
     @app_commands.describe(case="The case number.")
     async def case(self, interactions: discord.Interaction, case:app_commands.Range[int, 1, 999999]):        
         try:
-            if not self.sql:
+            if not self.client.sql:
                 raise DatabaseError("SQL module is not initialized!")
 
-            with self.sql.get_connection() as connection:
-                results = self.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = %s",(case,),connection=connection,handle_except=False)
+            with self.client.sql.get_connection() as connection:
+                results = self.client.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = %s",(case,),connection=connection,handle_except=False)
 
             if results:
                 # Sub-header
@@ -114,11 +115,11 @@ class PunishmentCaseCommands(PunishmentSystem):
                 title = f"Case #{case}"
                 message = "*Case not found.*" #TODO: make an error?
 
-            await interactions.response.send_message(embed=EmbedMaker(
+            await interactions.response.send_message(embed=self.client.embeds.create(
                 embed_type=EmbedType.USER_MANAGEMENT,
                 title=title,
                 message=message
-            ).create())
+            ))
             
         except Exception as e:
             await self.create_punishment_err(interactions,"display punishment",e)
@@ -131,12 +132,12 @@ class PunishmentCaseCommands(PunishmentSystem):
     async def removecase(self, interactions: discord.Interaction, case:app_commands.Range[int, 1, 999999]):
 
         try:
-            if not self.sql:
+            if not self.client.sql:
                 raise DatabaseError("SQL module is not initialized!")
             
-            with self.sql.get_connection() as connection:
-                if self.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = %s",(case,),connection=connection,handle_except=False):
-                    self.sql.execute_query("DELETE FROM Punishments WHERE CaseNo = %s",(case,),connection=connection,handle_except=False)
+            with self.client.sql.get_connection() as connection:
+                if self.client.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = %s",(case,),connection=connection,handle_except=False):
+                    self.client.sql.execute_query("DELETE FROM Punishments WHERE CaseNo = %s",(case,),connection=connection,handle_except=False)
 
                     title=f"<:check:1346601762882326700> Case #{case} Removed"
                     message=f"**Case #{case}** has successfully been removed from the record."
@@ -146,11 +147,11 @@ class PunishmentCaseCommands(PunishmentSystem):
             await self.create_punishment_err(interactions,"delete punishment",e)
             return
 
-        await interactions.response.send_message(embed=EmbedMaker(
+        await interactions.response.send_message(embed=self.client.embeds.create(
             embed_type=EmbedType.USER_MANAGEMENT,
             title=title,
             message=message
-        ).create())
+        ))
 
     @app_commands.command(name="editcase", description="Edits the reason listed on the specified punishment case.")
     @app_commands.checks.has_role("Staff")
@@ -158,12 +159,12 @@ class PunishmentCaseCommands(PunishmentSystem):
     async def editcase(self, interactions: discord.Interaction, case:app_commands.Range[int, 1, 999999], reason:str):
 
         try:
-            if not self.sql:
+            if not self.client.sql:
                 raise DatabaseError("SQL module is not initialized!")
 
-            with self.sql.get_connection() as connection:
-                if self.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = %s",(case,),connection=connection,handle_except=False):
-                    self.sql.execute_query("UPDATE Punishments SET Reason = %s WHERE CaseNo = %s",(reason, case),connection=connection,handle_except=False)
+            with self.client.sql.get_connection() as connection:
+                if self.client.sql.execute_query("SELECT * FROM Punishments WHERE CaseNo = %s",(case,),connection=connection,handle_except=False):
+                    self.client.sql.execute_query("UPDATE Punishments SET Reason = %s WHERE CaseNo = %s",(reason, case),connection=connection,handle_except=False)
 
                     title=f"<:check:1346601762882326700> Case #{case} Edited"
                     message=f"**Case #{case}** has been updated with reason '*{reason}*'."
@@ -173,8 +174,8 @@ class PunishmentCaseCommands(PunishmentSystem):
             await self.create_punishment_err(interactions,"edit punishment",e)
             return
 
-        await interactions.response.send_message(embed=EmbedMaker(
+        await interactions.response.send_message(embed=self.client.embeds.create(
             embed_type=EmbedType.USER_MANAGEMENT,
             title=title,
             message=message
-        ).create())
+        ))

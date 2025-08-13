@@ -3,16 +3,17 @@ from discord.ext import commands
 from discord.ui import Select, Button, View
 from discord import app_commands
 
+from bot_client import Client
 from modules.base import BaseModule
 from modules.modmail.ticket_types import ReportMember, StateQuestionConcern, SuggestPoll, ReportMod, ReportEventManager, Other
 from modules.util.embed_maker import *
 
 
-async def setup(client:commands.Bot, config):
+async def setup(client:Client, config):
     await client.add_cog(ModMail(client))
 
 class ModMail(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         self.client = client
 
     async def start_persistent_interactions(self): # TODO: This really shouldn't be in this file, also there is possibly better ways to do this
@@ -22,7 +23,7 @@ class ModMail(BaseModule):
     async def get_ticket(self, creator):
         '''Function to get ticket by ticket creator. There should only be one ticket per person up at any given time.'''
         # NOTE: This prevents staff from making tickets. Moving this to a ticket ID system instead will fix this
-        for thread in self.d_consts.CHANNEL_MODMAIL.threads:
+        for thread in self.client.d_consts.CHANNEL_MODMAIL.threads:
             if thread.owner == self.client.user and thread.archived is False:
                 for member in await thread.fetch_members():
                     if member.id == creator.id:
@@ -36,19 +37,19 @@ class ModMail(BaseModule):
         active_ticket = await self.get_ticket(interaction.user)
         if active_ticket is None:
 
-            new_ticket = await self.d_consts.CHANNEL_MODMAIL.create_thread(name=interaction.user.display_name,reason=f"Mod Mail ticket created by {interaction.user.display_name}")
+            new_ticket = await self.client.d_consts.CHANNEL_MODMAIL.create_thread(name=interaction.user.display_name,reason=f"Mod Mail ticket created by {interaction.user.display_name}")
             await new_ticket.edit(invitable=False)
-            msg:discord.Message = await new_ticket.send(f"<@&{ticket_data[0]}> {self.d_consts.ROLE_COREBOTS.mention} {interaction.user.mention}")
-            if ticket_data[0] != self.d_consts.ROLE_ADMIN.id:
-                await msg.edit(content=f"{self.d_consts.ROLE_MOD.mention} {self.d_consts.ROLE_ADMIN.mention} {self.d_consts.ROLE_OWNER.mention}")
-            await msg.edit(content="",embed=EmbedMaker(
+            msg:discord.Message = await new_ticket.send(f"<@&{ticket_data[0]}> {self.client.d_consts.ROLE_COREBOTS.mention} {interaction.user.mention}")
+            if ticket_data[0] != self.client.d_consts.ROLE_ADMIN.id:
+                await msg.edit(content=f"{self.client.d_consts.ROLE_MOD.mention} {self.client.d_consts.ROLE_ADMIN.mention} {self.client.d_consts.ROLE_OWNER.mention}")
+            await msg.edit(content="",embed=self.client.embeds.create(
                 embed_type=EmbedType.MOD_MAIL,
                 title=f"{str(ticket_data[1]).title()} Ticket",
                 message=f"New {ticket_data[1]} ticket from **{interaction.user.display_name}**.\n\n-# Staff can close the ticket with `/close`."
-            ).create())
+            ))
 
             if reported_message:
-                await new_ticket.send(embed=EmbedMaker(
+                await new_ticket.send(embed=self.client.embeds.create(
                     embed_type=EmbedType.MOD_MAIL,
                     title="Reported Message",
                     message=f"""
@@ -57,19 +58,19 @@ class ModMail(BaseModule):
 
                         <:links:1375354344798556311> https://discord.com/channels/{reported_message.guild.id}/{reported_message.channel.id}/{reported_message.id}
                     """
-                ).create())
+                ))
 
-            await interaction.followup.send(embed=EmbedMaker(
+            await interaction.followup.send(embed=self.client.embeds.create(
                 embed_type=EmbedType.MOD_MAIL,
                 title="Ticket Created",
                 message=f"Your {ticket_data[1]} ticket has been created! You can find it and follow up here: <#{new_ticket.id}>"
-            ).create(),ephemeral=True)
+            ),ephemeral=True)
         else:
-            await interaction.followup.send_message(embed=EmbedMaker(
+            await interaction.followup.send_message(embed=self.client.embeds.create(
                 embed_type=EmbedType.MOD_MAIL,
                 message=f"You already have an active ticket! You can find it here: <#{active_ticket.id}>",
                 error=True
-            ).create(),ephemeral=True)
+            ),ephemeral=True)
 
 
     TICKET_DATA_MAP = {
@@ -127,26 +128,26 @@ class ModMail(BaseModule):
         view = View(timeout=None)
         view.add_item(mm_select)
 
-        msg = await self.d_consts.CHANNEL_MODMAIL.fetch_message(1040873181159886909) #TODO: Move reference to config whenever that is done
-        await msg.edit(content="", embed=EmbedMaker(
+        msg = await self.client.d_consts.CHANNEL_MODMAIL.fetch_message(1040873181159886909) #TODO: Move reference to config whenever that is done
+        await msg.edit(content="", embed=self.client.embeds.create(
             embed_type=EmbedType.MOD_MAIL,
             title="That Place Mod Mail",
             message="**Use the dropdown below to create a modmail ticket.**\nOnce you select an option, a thread will be created where you can speak with the staff team directly.\n\n*Any non-serious tickets must be submitted as 'Other'.*"
-        ).create(),view=view)
+        ),view=view)
 
     @app_commands.command(name="close", description="Closes the mod mail ticket that the command is sent in.")
     async def close(self, interactions: discord.Interaction):
-        if interactions.channel in self.d_consts.CHANNEL_MODMAIL.threads:
-            await interactions.response.send_message(embed=EmbedMaker(
+        if interactions.channel in self.client.d_consts.CHANNEL_MODMAIL.threads:
+            await interactions.response.send_message(embed=self.client.embeds.create(
                 embed_type=EmbedType.MOD_MAIL,
                 title="Ticket Closed",
                 message=f"Closed by {interactions.user.display_name}."
-            ).create())
-            await self.d_consts.CHANNEL_MISCLOGS.send(embed=EmbedMaker(
+            ))
+            await self.client.d_consts.CHANNEL_MISCLOGS.send(embed=self.client.embeds.create(
                 embed_type=EmbedType.MOD_MAIL,
                 title="Ticket Closed",
                 message=f"{interactions.channel.mention}"
-            ).create())
+            ))
             await interactions.channel.edit(archived=True,locked=True)
 
     @commands.Cog.listener()
@@ -154,6 +155,6 @@ class ModMail(BaseModule):
         await super().on_ready()
         
         # This should only ron on initial boot
-        if self.bot_started is False:
+        #if self.bot_started is False:
             # Generate persistent interactions
-            await self.start_persistent_interactions()
+        await self.start_persistent_interactions()

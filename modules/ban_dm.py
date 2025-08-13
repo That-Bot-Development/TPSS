@@ -1,16 +1,16 @@
 import discord
 from discord.ext import commands
 
+from bot_client import Client
 from modules.base import BaseModule
-
 from modules.util.embed_maker import *
 
-async def setup(client:commands.Bot, config):
+async def setup(client:Client, config):
     await client.add_cog(BanDM(client))
 
 # DEPRECATED AS OF 2.8.0
 class BanDM(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         self.client = client
 
     @commands.Cog.listener()
@@ -27,4 +27,4 @@ class BanDM(BaseModule):
 
         # DEPRECATION ALERT
         elif ".punishments" in message.content and not message.author.bot:
-            await message.channel.send(embed=EmbedMaker(embed_type=EmbedType.MISC,title="<:alert:1346654360012329044> Deprecated command!",message="`.punishments` is no longer updated with the most recent punishment logs and will soon be retired.\nPlease use `/punishments` instead!").create())
+            await message.channel.send(embed=self.client.embeds.create(embed_type=EmbedType.MISC,title="<:alert:1346654360012329044> Deprecated command!",message="`.punishments` is no longer updated with the most recent punishment logs and will soon be retired.\nPlease use `/punishments` instead!"))
