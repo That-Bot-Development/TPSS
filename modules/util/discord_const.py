@@ -20,7 +20,7 @@ class DiscordConstants(commands.Cog):
         self.client = client
 
         # Initialize all constants. Defined in define_constants on bot ready call
-        self.SERVER = self.CHANNEL_MODMAIL = self.CHANNEL_MISCLOGS = self.CHANNEL_MODLOGS = self.CHANNEL_SUGGESTIONS = self.CHANNEL_YOURART = self.ROLE_STAFF = self.ROLE_OWNER = self.ROLE_ADMIN = self.ROLE_MOD = self.ROLE_MMMISC = self.ROLE_COREBOTS = self.VAR_ALLOWEDMENTIONS_NONE = None
+        self.SERVER = self.CHANNEL_MODMAIL = self.CHANNEL_MISCLOGS = self.CHANNEL_MODLOGS = self.CHANNEL_SUGGESTIONS = self.CHANNEL_YOURART = self.CHANNEL_EMOTE_SUGGESTIONS = self.ROLE_STAFF = self.ROLE_OWNER = self.ROLE_ADMIN = self.ROLE_MOD = self.ROLE_MMMISC = self.ROLE_COREBOTS = self.VAR_ALLOWEDMENTIONS_NONE = None
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -36,7 +36,8 @@ class DiscordConstants(commands.Cog):
         self.CHANNEL_MODLOGS = self.SERVER.get_channel(579800016068018186)
         self.CHANNEL_SUGGESTIONS = self.SERVER.get_channel(1037952455188693042)
         self.CHANNEL_YOURART = self.SERVER.get_channel(579313588972552193)
-
+        self.CHANNEL_EMOTE_SUGGESTIONS = self.SERVER.get_channel(1318390903597174784)
+        
         # ROLES
         self.ROLE_STAFF = self.SERVER.get_role(624857677088030760)
         self.ROLE_OWNER = self.SERVER.get_role(578357103144468490)
