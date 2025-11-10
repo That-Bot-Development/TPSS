@@ -1,9 +1,7 @@
 import discord
 from discord.ext import commands
 
-from bot_client import Client
-
-async def setup(client:Client, config):
+async def setup(client:commands.Bot, config):
     await client.add_cog(DiscordConstants(client))
 
 #TODO: Make this configurable through discord instead of hardcoded
@@ -16,7 +14,7 @@ class DiscordConstants(commands.Cog):
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, client: Client):
+    def __init__(self, client):
         self.client = client
 
         # Initialize all constants. Defined in define_constants on bot ready call

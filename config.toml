@@ -14,7 +14,7 @@ modules = [
     "modules.user_management.punishment_case_cmds",
     "modules.modmail.mod_mail",
     "modules.modmail.report_msg",
-    "modules.art_manager",
+    "modules.art_manager"
     "modules.suggestion_manager",
     "modules.utilities",
     "modules.fun.fun"
