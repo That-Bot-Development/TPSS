@@ -14,8 +14,8 @@ class GeneralManager(BaseModule):
     @commands.Cog.listener()
     async def on_guild_channel_update(self, before: discord.abc.GuildChannel, after: discord.abc.GuildChannel):
         if after == self.d_consts.CHANNEL_GENERAL:
+            await self.d_consts.CHANNEL_GENERAL.edit(slowmode_delay=3)
             if after.name != before.name:
-                await self.d_consts.CHANNEL_GENERAL.edit(slowmode_delay=3)
                 embed = discord.Embed(title="#general Name Change!", 
                                       description=f"Name Changed to ***#{after.name}***", 
                                       timestamp=DT.now(), 
