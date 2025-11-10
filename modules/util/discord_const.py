@@ -18,7 +18,7 @@ class DiscordConstants(commands.Cog):
         self.client = client
 
         # Initialize all constants. Defined in define_constants on bot ready call
-        self.SERVER = self.CHANNEL_GENERAL = self.CHANNEL_GENERAL_HISTORY = self.CHANNEL_MODMAIL = self.CHANNEL_MISCLOGS = self.CHANNEL_MODLOGS = self.CHANNEL_SUGGESTIONS = self.CHANNEL_YOURART = self.ROLE_STAFF = self.ROLE_OWNER = self.ROLE_ADMIN = self.ROLE_MOD = self.ROLE_MMMISC = self.ROLE_COREBOTS = self.VAR_ALLOWEDMENTIONS_NONE = None
+        self.SERVER = self.CHANNEL_MODMAIL = self.CHANNEL_MISCLOGS = self.CHANNEL_MODLOGS = self.CHANNEL_SUGGESTIONS = self.CHANNEL_YOURART = self.ROLE_STAFF = self.ROLE_OWNER = self.ROLE_ADMIN = self.ROLE_MOD = self.ROLE_MMMISC = self.ROLE_COREBOTS = self.VAR_ALLOWEDMENTIONS_NONE = None
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -29,8 +29,6 @@ class DiscordConstants(commands.Cog):
         self.SERVER = self.client.get_guild(578356230637223936)
 
         # CHANNELS
-        self.CHANNEL_GENERAL = self.SERVER.get_channel(0)
-        self.CHANNEL_GENERAL_HISTORY = self.SERVER.get_channel(0)
         self.CHANNEL_MODMAIL = self.SERVER.get_channel(986085007246381147)
         self.CHANNEL_MISCLOGS = self.SERVER.get_channel(608465315755720714)
         self.CHANNEL_MODLOGS = self.SERVER.get_channel(579800016068018186)
