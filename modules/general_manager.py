@@ -18,9 +18,8 @@ class GeneralManager(BaseModule):
             await self.d_consts.CHANNEL_GENERAL.edit(slowmode_delay=3)
             if after.name != before.name:
                 await self.d_consts.CHANNEL_GENERAL_HISTORY.send(embed=self.client.embeds.create(
-                embed_type=EmbedType.ACTIVITY_LOG,
-                title = "#general Name Change!",
-                message=f"Name Changed to ***#{after.name}***",
-                color=discord.Colour.random(seed=int(DT.now().timestamp()))
-            ))
+                    embed_type=EmbedType.ACTIVITY_LOG,
+                    title = "#general Name Change!",
+                    message=f"Name Changed to ***#{after.name}***",
+                    color=discord.Colour.random(seed=int(DT.now().timestamp()))))
 

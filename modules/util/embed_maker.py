@@ -15,7 +15,7 @@ class EmbedMaker(): # This probably should not extend BaseModule
     def __init__(self, client:Client):
         self.client = client
 
-    def create(self, embed_type:EmbedType, message:str, title:str="", image_url:str="", color:discord.Colour|int=0x69b2ff,error:bool=False):
+    def create(self, embed_type:EmbedType, message:str, title:str="", image_url:str="", color:discord.Colour|int=0x69b2ff, error:bool=False):
         embed = discord.Embed(color=self.color, title=self.title,description=self.message)
 
         if self.image_url is not None:
