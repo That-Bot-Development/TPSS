@@ -3,6 +3,7 @@ from discord.ext import commands
 from datetime import datetime as DT
 
 from modules.base import BaseModule
+from util.embed_maker import *
 
 async def setup(client:commands.Bot, config):
     await client.add_cog(GeneralManager(client))
@@ -16,10 +17,10 @@ class GeneralManager(BaseModule):
         if after == self.d_consts.CHANNEL_GENERAL:
             await self.d_consts.CHANNEL_GENERAL.edit(slowmode_delay=3)
             if after.name != before.name:
-                embed = discord.Embed(title="#general Name Change!", 
-                                      description=f"Name Changed to ***#{after.name}***", 
-                                      timestamp=DT.now(), 
-                                      color=discord.Color.random(seed=int(DT.now().timestamp())))
-                embed.set_footer(text="That Bot vUnknown") #Theres probaly a way to get the version, but i dont wanna figure that out, used modmail as reference.
-                await self.d_consts.CHANNEL_GENERAL_HISTORY.send(embed=embed)
+                await self.d_consts.CHANNEL_GENERAL_HISTORY.send(embed=self.client.embeds.create(
+                embed_type=EmbedType.ACTIVITY_LOG,
+                title = "#general Name Change!",
+                message=f"Name Changed to ***#{after.name}***",
+                color=discord.Colour.random(seed=int(DT.now().timestamp()))
+            ))
 
